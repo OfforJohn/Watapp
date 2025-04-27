@@ -3,15 +3,14 @@ import { initializeApp } from "firebase/app";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD2i-vW6JTBnx8EzkIauU3QG081R_zEOAM",
-  authDomain: "whatsapp-clone-55b30.firebaseapp.com",
-  projectId: "whatsapp-clone-55b30",
-  storageBucket: "whatsapp-clone-55b30.appspot.com",
-  messagingSenderId: "180279867664",
-  appId: "1:180279867664:web:4012ccc45a5ab1d0d58d95",
-  measurementId: "G-KHVXD75VD7",
+  apiKey: "AIzaSyAdRmpL8XB1uz-DLbKII0w75yBwe1s7D4A",
+  authDomain: "whatapp-d6d8a.firebaseapp.com",
+  projectId: "whatapp-d6d8a",
+  storageBucket: "whatapp-d6d8a.firebasestorage.app",
+  messagingSenderId: "66051827717",
+  appId: "1:66051827717:web:22f4afc64d4740692d146c",
+  measurementId: "G-Z3W735JYDS"
 };
-
 
 const app = initializeApp(firebaseConfig);
 export const firebaseAuth = getAuth(app);
