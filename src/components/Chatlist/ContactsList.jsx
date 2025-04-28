@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { calculateTime } from "@/utils/CalculateTime";
 import { BsCheckAll, BsCheckLg } from "react-icons/bs";
 import MessageStatus from "../common/MessageStatus";
-import ImageMessage from "./ImageMessage";
+import ImageMessage from "../Chat/ImageMessage";
 
 const VoiceMessage = dynamic(() => import("@/components/Chat/VoiceMessage"), {
   ssr: false,
