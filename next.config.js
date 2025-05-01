@@ -6,7 +6,7 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["localhost"],
+    domains: ["first-wave-card.glitch.me"],
   },
 };
 
