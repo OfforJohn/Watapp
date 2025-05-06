@@ -5,6 +5,9 @@ import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { useRouter } from "next/router";
 import ContextMenu from "../common/ContextMenu";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ChatListHeader() {
   const [{ userInfo }, dispatch] = useStateProvider();
@@ -21,7 +24,39 @@ export default function ChatListHeader() {
     setIsContextMenuVisible(true);
   };
 
+
+  const handleImportUsers = async () => {
+    try {
+      setIsContextMenuVisible(false);
+      const res = await axios.post(
+        "https://first-wave-card.glitch.me/api/auth/add-batch-users",
+        { startingId: 100 } // 👈 Correctly pass the body
+      );
+      toast.success(res.data.message || "Users imported successfully");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to import users");
+    }
+  };
+  const handleDeleteAllUsers = async () => {
+    try {
+      setIsContextMenuVisible(false);
+      const startId = 100; // Change as needed
+      const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
+      toast.success(res.data.message || "Users deleted successfully");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to delete users");
+    }
+  };
+
   const contextMenuOptions = [
+    {
+      name: "Import All Users",
+      callBack: handleImportUsers,
+    },
+    {
+      name: "Delete All Users",
+      callBack: handleDeleteAllUsers,
+    },
     {
       name: "Logout",
       callBack: async () => {
@@ -40,7 +75,7 @@ export default function ChatListHeader() {
       <div className="cursor-pointer">
         <Avatar type="sm" image={userInfo?.profileImage} />
       </div>
-      <div className="flex gap-6 ">
+      <div className="flex gap-6">
         <BsFillChatLeftTextFill
           className="text-panel-header-icon cursor-pointer text-xl"
           title="New chat"
