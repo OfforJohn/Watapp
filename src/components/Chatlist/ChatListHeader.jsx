@@ -9,13 +9,12 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+// ... imports remain unchanged
+
 export default function ChatListHeader() {
   const [{ userInfo }, dispatch] = useStateProvider();
   const router = useRouter();
-  const [contextMenuCordinates, setContextMenuCordinates] = useState({
-    x: 0,
-    y: 0,
-  });
+  const [contextMenuCordinates, setContextMenuCordinates] = useState({ x: 0, y: 0 });
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
   const [isBroadcastModalVisible, setIsBroadcastModalVisible] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
@@ -24,20 +23,20 @@ export default function ChatListHeader() {
     e.preventDefault();
     setContextMenuCordinates({ x: e.pageX, y: e.pageY });
     setIsContextMenuVisible(true);
+    console.log("Context menu opened at:", { x: e.pageX, y: e.pageY });
   };
 
   const handleImportUsers = async () => {
     try {
       setIsContextMenuVisible(false);
-      const res = await axios.post(
-        "https://first-wave-card.glitch.me/api/auth/add-batch-users",
-        { startingId: 100 }
-      );
+      console.log("Importing users...");
+      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
+        startingId: 100,
+      });
+      console.log("Import response:", res.data);
       toast.success(res.data.message || "Users imported successfully");
-         setTimeout(() => {
-      window.location.reload();
-    }, 3000);
     } catch (err) {
+      console.error("Import error:", err);
       toast.error(err?.response?.data?.message || "Failed to import users");
     }
   };
@@ -46,16 +45,13 @@ export default function ChatListHeader() {
     try {
       setIsContextMenuVisible(false);
       const startId = 100;
-      const res = await axios.delete(
-        `https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`
-      );
+      console.log("Deleting users starting from ID:", startId);
+      const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
+      console.log("Delete response:", res.data);
       toast.success(res.data.message || "Users deleted successfully");
-         setTimeout(() => {
-      window.location.reload();
-    }, 3000);
     } catch (err) {
+      console.error("Delete error:", err);
       toast.error(err?.response?.data?.message || "Failed to delete users");
-
     }
   };
 
@@ -63,16 +59,21 @@ export default function ChatListHeader() {
     try {
       if (!broadcastMessage.trim()) {
         toast.error("Please enter a message to broadcast.");
+        console.warn("Broadcast aborted: empty message");
         return;
       }
 
-      setIsBroadcastModalVisible(false); // Hide modal
-      const res = await axios.post(
-        "https://first-wave-card.glitch.me/api/auth/message/broadcast",
-        { message: broadcastMessage }
-      );
+      console.log("Broadcasting message:", broadcastMessage);
+      setIsBroadcastModalVisible(false);
+      const userId = parseInt(localStorage.getItem("userId"));
+
+      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/message/broadcast", {
+        message: broadcastMessage,
+        senderId: userId, // or whatever key your backend expects
+      });
+      console.log("Broadcast response:", res.data);
       toast.success(res.data.message || "Broadcast sent successfully");
-      setBroadcastMessage(""); // Clear message after sending
+
       dispatch({
         type: reducerCases.ADD_BROADCAST_MESSAGE,
         payload: {
@@ -80,14 +81,16 @@ export default function ChatListHeader() {
           timestamp: new Date().toISOString(),
         },
       });
-       // Refresh the page after 3 seconds
-    setTimeout(() => {
-      window.location.reload();
-    }, 3000);
-      
+      setBroadcastMessage("");
     } catch (err) {
+      console.error("Broadcast error:", err);
       toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
+  };
+
+  const handleAllContactsPage = () => {
+    console.log("Navigating to All Contacts page");
+    dispatch({ type: reducerCases.SET_ALL_CONTACTS_PAGE });
   };
 
   const contextMenuOptions = [
@@ -101,20 +104,20 @@ export default function ChatListHeader() {
     },
     {
       name: "Broadcast to All",
-      callBack: () => setIsBroadcastModalVisible(true), // Show broadcast modal
+      callBack: () => {
+        console.log("Opening broadcast modal");
+        setIsBroadcastModalVisible(true);
+      },
     },
     {
       name: "Logout",
       callBack: async () => {
+        console.log("Logging out...");
         setIsContextMenuVisible(false);
         router.push("/logout");
       },
     },
   ];
-
-  const handleAllContactsPage = () => {
-    dispatch({ type: reducerCases.SET_ALL_CONTACTS_PAGE });
-  };
 
   return (
     <div className="h-16 px-4 py-3 flex justify-between items-center">
@@ -152,7 +155,10 @@ export default function ChatListHeader() {
             <h2 className="text-xl font-semibold mb-4">Broadcast Message to All</h2>
             <textarea
               value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
+              onChange={(e) => {
+                console.log("Broadcast message input:", e.target.value);
+                setBroadcastMessage(e.target.value);
+              }}
               className="w-full p-3 border border-gray-300 rounded-md"
               placeholder="Enter your message here"
               rows="4"
@@ -166,7 +172,10 @@ export default function ChatListHeader() {
               </button>
               <button
                 className="bg-gray-300 p-2 rounded-md"
-                onClick={() => setIsBroadcastModalVisible(false)}
+                onClick={() => {
+                  console.log("Closing broadcast modal");
+                  setIsBroadcastModalVisible(false);
+                }}
               >
                 Cancel
               </button>

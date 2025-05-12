@@ -42,6 +42,7 @@ export default function Login() {
           });
           router.push("/onboarding");
         } else {
+          localStorage.setItem("userId", data.data.id); // ✅ Move here
           dispatch({
             type: reducerCases.SET_USER_INFO,
             userInfo: {
@@ -54,11 +55,13 @@ export default function Login() {
           });
           router.push("/");
         }
+        
       }
     } catch (error) {
       console.log({ error });
     }
   };
+  
   return (
     <div className="flex justify-center items-center bg-panel-header-background h-screen w-screen flex-col gap-6">
       <div className="flex items-center justify-center gap-2 text-white">
