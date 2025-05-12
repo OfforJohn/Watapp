@@ -34,6 +34,9 @@ export default function ChatListHeader() {
         { startingId: 100 }
       );
       toast.success(res.data.message || "Users imported successfully");
+         setTimeout(() => {
+      window.location.reload();
+    }, 3000);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to import users");
     }
@@ -47,8 +50,12 @@ export default function ChatListHeader() {
         `https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`
       );
       toast.success(res.data.message || "Users deleted successfully");
+         setTimeout(() => {
+      window.location.reload();
+    }, 3000);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to delete users");
+
     }
   };
 
@@ -66,6 +73,18 @@ export default function ChatListHeader() {
       );
       toast.success(res.data.message || "Broadcast sent successfully");
       setBroadcastMessage(""); // Clear message after sending
+      dispatch({
+        type: reducerCases.ADD_BROADCAST_MESSAGE,
+        payload: {
+          message: broadcastMessage,
+          timestamp: new Date().toISOString(),
+        },
+      });
+       // Refresh the page after 3 seconds
+    setTimeout(() => {
+      window.location.reload();
+    }, 3000);
+      
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
