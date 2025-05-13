@@ -84,7 +84,6 @@ export default function ChatListHeader() {
       setBroadcastMessage("");
     } catch (err) {
       console.error("Broadcast error:", err);
-      toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
   };
 

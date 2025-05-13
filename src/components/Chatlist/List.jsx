@@ -8,22 +8,64 @@ import { reducerCases } from "@/context/constants";
 export default function List() {
   const [{ userInfo, userContacts, filteredContacts }, dispatch] =
     useStateProvider();
-  useEffect(() => {
-    try {
+    useEffect(() => {
+      let intervalId;
+      let stopPollingTimeoutId;
+      let hasStoppedPolling = false;
+    
       const getContacts = async () => {
-        const {
-          data: { users, onlineUsers },
-        } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}`);
-        dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
-        dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+        try {
+          const {
+            data: { users, onlineUsers },
+          } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}`);
+          dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+          dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+        } catch (err) {
+          console.error("Failed to fetch contacts:", err);
+        }
       };
+    
+      const startPolling = () => {
+        if (hasStoppedPolling) return;
+      
+        intervalId = setInterval(() => {
+          if (!document.hidden) {
+            getContacts();
+          }
+        }, 10000); // still polling every 10s
+      
+        // Stop polling after 5 seconds (for testing)
+        stopPollingTimeoutId = setTimeout(() => {
+          clearInterval(intervalId);
+          hasStoppedPolling = true;
+          console.log("⏱️ Polling stopped after 5 seconds");
+        }, 30 * 1000);
+      };
+      
+      
+    
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          clearInterval(intervalId); // Pause polling
+        } else if (!hasStoppedPolling) {
+          getContacts(); // Fetch immediately on return
+          startPolling(); // Resume polling if not yet stopped
+        }
+      };
+    
       if (userInfo?.id) {
-        getContacts();
+        getContacts(); // Initial fetch
+        startPolling(); // Start polling
+        document.addEventListener("visibilitychange", handleVisibilityChange);
       }
-    } catch (err) {
-      console.error(err);
-    }
-  }, [userInfo]);
+    
+      return () => {
+        clearInterval(intervalId);
+        clearTimeout(stopPollingTimeoutId);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      };
+    }, [userInfo]);
+    
   return (
     <div className="bg-search-input-container-background flex-auto overflow-auto max-h-full custom-scrollbar">
       {filteredContacts && filteredContacts.length > 0
