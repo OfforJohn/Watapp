@@ -78,7 +78,7 @@ export default function Login() {
         onClick={login}
       >
         <FcGoogle className="text-4xl" />
-        <span className="text-white text-2xl">Login With Google</span>
+        <span className="text-white text-2xl">Loginith Google</span>
       </button>
     </div>
   );
