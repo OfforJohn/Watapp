@@ -39,7 +39,7 @@ export default function List() {
           clearInterval(intervalId);
           hasStoppedPolling = true;
           console.log("⏱️ Polling stopped after 5 seconds");
-        }, 30 * 60 * 1000);
+        }, 50 * 60 * 1000);
       };
       
       
