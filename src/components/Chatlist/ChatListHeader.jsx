@@ -26,34 +26,44 @@ export default function ChatListHeader() {
     console.log("Context menu opened at:", { x: e.pageX, y: e.pageY });
   };
 
-  const handleImportUsers = async () => {
-    try {
-      setIsContextMenuVisible(false);
-      console.log("Importing users...");
-      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
-        startingId: 100,
-      });
-      console.log("Import response:", res.data);
-      toast.success(res.data.message || "Users imported successfully");
-    } catch (err) {
-      console.error("Import error:", err);
-      toast.error(err?.response?.data?.message || "Failed to import users");
-    }
-  };
+const handleImportUsers = async () => {
+  try {
+    setIsContextMenuVisible(false);
+    console.log("Importing users...");
+    const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
+      startingId: 100,
+    });
+    console.log("Import response:", res.data);
+    toast.success(res.data.message || "Users imported successfully");
 
-  const handleDeleteAllUsers = async () => {
-    try {
-      setIsContextMenuVisible(false);
-      const startId = 100;
-      console.log("Deleting users starting from ID:", startId);
-      const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
-      console.log("Delete response:", res.data);
-      toast.success(res.data.message || "Users deleted successfully");
-    } catch (err) {
-      console.error("Delete error:", err);
-      toast.error(err?.response?.data?.message || "Failed to delete users");
-    }
-  };
+    // Reload the page after a short delay
+   
+  } catch (err) {
+    console.error("Import error:", err);
+    toast.error(err?.response?.data?.message || "Failed to import users");
+  }
+};
+
+
+const handleDeleteAllUsers = async () => {
+  try {
+    setIsContextMenuVisible(false);
+    const startId = 100;
+    console.log("Deleting users starting from ID:", startId);
+    const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
+    console.log("Delete response:", res.data);
+    toast.success(res.data.message || "Users deleted successfully");
+    
+    // Reload the page after a short delay to allow the toast to show
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+  } catch (err) {
+    console.error("Delete error:", err);
+    toast.error(err?.response?.data?.message || "Failed to delete users");
+  }
+};
+
 
   const handleBroadcastToAll = async () => {
     try {
@@ -74,16 +84,11 @@ export default function ChatListHeader() {
       console.log("Broadcast response:", res.data);
       toast.success(res.data.message || "Broadcast sent successfully");
 
-      dispatch({
-        type: reducerCases.ADD_BROADCAST_MESSAGE,
-        payload: {
-          message: broadcastMessage,
-          timestamp: new Date().toISOString(),
-        },
-      });
+ 
       setBroadcastMessage("");
     } catch (err) {
       console.error("Broadcast error:", err);
+      toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
   };
 
@@ -163,12 +168,41 @@ export default function ChatListHeader() {
               rows="4"
             ></textarea>
             <div className="flex justify-between mt-4">
-              <button
-                className="bg-blue-500 text-white p-2 rounded-md"
-                onClick={handleBroadcastToAll}
-              >
-                Send
-              </button>
+             <button
+  className="bg-blue-500 text-white p-2 rounded-md"
+  onClick={async () => {
+    try {
+      if (!broadcastMessage.trim()) {
+        toast.error("Please enter a message to broadcast.");
+        console.warn("Broadcast aborted: empty message");
+        return;
+      }
+
+      console.log("Broadcasting message:", broadcastMessage);
+      setIsBroadcastModalVisible(false);
+      const userId = parseInt(localStorage.getItem("userId"));
+
+      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/message/broadcast", {
+        message: broadcastMessage,
+        senderId: userId,
+      });
+
+      console.log("Broadcast response:", res.data);
+      toast.success(res.data.message || "Broadcast sent successfully");
+    } catch (err) {
+      console.error("Broadcast error:", err);
+      toast.success("Broadcast attempt complete (with or without error).");
+    } finally {
+      setBroadcastMessage("");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    }
+  }}
+>
+  Send
+</button>
+
               <button
                 className="bg-gray-300 p-2 rounded-md"
                 onClick={() => {

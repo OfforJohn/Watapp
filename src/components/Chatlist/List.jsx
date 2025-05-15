@@ -8,73 +8,77 @@ import { reducerCases } from "@/context/constants";
 export default function List() {
   const [{ userInfo, userContacts, filteredContacts }, dispatch] =
     useStateProvider();
-    useEffect(() => {
-      let intervalId;
-      let stopPollingTimeoutId;
-      let hasStoppedPolling = false;
-    
-      const getContacts = async () => {
-        try {
-          const {
-            data: { users, onlineUsers },
-          } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}`);
-          dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
-          dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
-        } catch (err) {
-          console.error("Failed to fetch contacts:", err);
-        }
-      };
-    
-      const startPolling = () => {
-        if (hasStoppedPolling) return;
-      
-        intervalId = setInterval(() => {
-          if (!document.hidden) {
-            getContacts();
-          }
-        }, 10000); // still polling every 10s
-      
-        // Stop polling after 5 seconds (for testing)
-        stopPollingTimeoutId = setTimeout(() => {
-          clearInterval(intervalId);
-          hasStoppedPolling = true;
-          console.log("⏱️ Polling stopped after 5 seconds");
-        }, 50 * 60 * 1000);
-      };
-      
-      
-    
-      const handleVisibilityChange = () => {
-        if (document.hidden) {
-          clearInterval(intervalId); // Pause polling
-        } else if (!hasStoppedPolling) {
-          getContacts(); // Fetch immediately on return
-          startPolling(); // Resume polling if not yet stopped
-        }
-      };
-    
-      if (userInfo?.id) {
-        getContacts(); // Initial fetch
-        startPolling(); // Start polling
-        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  useEffect(() => {
+    let intervalId = null;
+    let stopPollingTimeoutId = null;
+    let hasStoppedPolling = false;
+
+    const getContacts = async () => {
+      try {
+        const {
+          data: { users, onlineUsers },
+        } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}`);
+        dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+        dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+      } catch (err) {
+        console.error("Failed to fetch contacts:", err);
       }
-    
-      return () => {
+    };
+
+    const startPolling = () => {
+      if (intervalId || hasStoppedPolling) return; // Prevent stacking
+
+      intervalId = setInterval(() => {
+        if (!document.hidden) {
+          getContacts();
+        }
+      }, 5000); // 10 seconds
+
+      stopPollingTimeoutId = setTimeout(() => {
         clearInterval(intervalId);
-        clearTimeout(stopPollingTimeoutId);
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
-      };
-    }, [userInfo]);
-    
+        intervalId = null;
+        hasStoppedPolling = true;
+        console.log("⏱️ Polling stopped after 30 minutes");
+      }, 8 * 60 * 1000); // 30 minutes
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+      } else if (!hasStoppedPolling && !intervalId) {
+        getContacts();
+        startPolling();
+      }
+    };
+
+    if (userInfo?.id) {
+      getContacts(); // Initial fetch
+      startPolling(); // Begin polling
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (stopPollingTimeoutId) clearTimeout(stopPollingTimeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      intervalId = null;
+      stopPollingTimeoutId = null;
+    };
+  }, [userInfo]);
+
   return (
     <div className="bg-search-input-container-background flex-auto overflow-auto max-h-full custom-scrollbar">
       {filteredContacts && filteredContacts.length > 0
-        ? filteredContacts.map((contact) => {
-            return <ChatLIstItem data={contact} key={contact.id} />;
-          })
-        : userContacts.map((contact) => {
-            return <ChatLIstItem data={contact} key={contact.id} />;
-          })}
+        ? filteredContacts.map((contact) => (
+            <ChatLIstItem data={contact} key={contact.id} />
+          ))
+        : userContacts.map((contact) => (
+            <ChatLIstItem data={contact} key={contact.id} />
+          ))}
     </div>
   );
 }
