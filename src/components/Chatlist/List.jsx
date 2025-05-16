@@ -40,7 +40,7 @@ export default function List() {
         intervalId = null;
         hasStoppedPolling = true;
         console.log("⏱️ Polling stopped after 30 minutes");
-      }, 8 * 60 * 1000); // 30 minutes
+      }, 15 * 60 * 1000); // 30 minutes
     };
 
     const handleVisibilityChange = () => {
