@@ -33,7 +33,7 @@ export default function List() {
         if (!document.hidden) {
           getContacts();
         }
-      }, 5000); // 10 seconds
+      }, 40000); // 10 seconds
 
       stopPollingTimeoutId = setTimeout(() => {
         clearInterval(intervalId);
