@@ -33,14 +33,14 @@ export default function List() {
         if (!document.hidden) {
           getContacts();
         }
-      }, 10000); // 10 secondsaaaaaaaaaaaaaa
+      }, 5000); // 10 seconds
 
       stopPollingTimeoutId = setTimeout(() => {
         clearInterval(intervalId);
         intervalId = null;
         hasStoppedPolling = true;
         console.log("⏱️ Polling stopped after 30 minutes");
-      }, 19 * 60 * 1000); // 30 minutes
+      }, 30 * 60 * 1000); // 30 minutes
     };
 
     const handleVisibilityChange = () => {
