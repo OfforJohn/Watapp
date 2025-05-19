@@ -48,7 +48,7 @@ const handleImportUsers = async () => {
 const handleDeleteAllUsers = async () => {
   try {
     setIsContextMenuVisible(false);
-    const startId = 1;
+    const startId = 3;
     console.log("Deleting users starting from ID:", startId);
     const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
     console.log("Delete response:", res.data);
