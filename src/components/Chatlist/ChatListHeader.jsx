@@ -191,12 +191,10 @@ const handleDeleteAllUsers = async () => {
       toast.success(res.data.message || "Broadcast sent successfully");
     } catch (err) {
       console.error("Broadcast error:", err);
-      toast.success("Broadcast attempt complete (with or without error).");
+     
     } finally {
       setBroadcastMessage("");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+    
     }
   }}
 >
