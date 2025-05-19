@@ -194,9 +194,7 @@ const handleDeleteAllUsers = async () => {
       toast.success("Broadcast attempt complete");
     } finally {
       setBroadcastMessage("");
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+     
     }
   }}
 >
