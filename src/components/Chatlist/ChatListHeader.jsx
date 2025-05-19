@@ -48,7 +48,7 @@ const handleImportUsers = async () => {
 const handleDeleteAllUsers = async () => {
   try {
     setIsContextMenuVisible(false);
-    const startId = 100;
+    const startId = 1;
     console.log("Deleting users starting from ID:", startId);
     const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
     console.log("Delete response:", res.data);
@@ -191,10 +191,12 @@ const handleDeleteAllUsers = async () => {
       toast.success(res.data.message || "Broadcast sent successfully");
     } catch (err) {
       console.error("Broadcast error:", err);
-     
+      toast.success("Broadcast attempt complete (with or without error).");
     } finally {
       setBroadcastMessage("");
-    
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     }
   }}
 >
