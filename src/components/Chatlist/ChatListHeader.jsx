@@ -52,6 +52,7 @@ export default function ChatListHeader() {
       setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       console.error("Import error:", err);
+      toast.error(err?.response?.data?.message || "Failed to import users");
     }
   };
 
@@ -98,7 +99,6 @@ const handleBroadcastToAll = async () => {
       setBroadcastMessage("");
     } catch (err) {
       console.error("Broadcast error:", err);
-      toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
   };
 
