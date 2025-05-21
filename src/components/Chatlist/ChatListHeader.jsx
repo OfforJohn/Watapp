@@ -76,27 +76,30 @@ const handleDeleteAllUsers = async () => {
     toast.error(err?.response?.data?.message || "Failed to delete users");
   }
 };
-
-  // Broadcast to all handler
-  const handleBroadcastToAll = async () => {
+const handleBroadcastToAll = async () => {
     try {
       if (!broadcastMessage.trim()) {
         toast.error("Please enter a message to broadcast.");
         console.warn("Broadcast aborted: empty message");
         return;
       }
+
       console.log("Broadcasting message:", broadcastMessage);
       setIsBroadcastModalVisible(false);
-      const userId = parseInt(localStorage.getItem("userId"), 10);
-      const res = await axios.post(
-        "https://first-wave-card.glitch.me/api/auth/message/broadcast",
-        { message: broadcastMessage, senderId: userId }
-      );
+      const userId = parseInt(localStorage.getItem("userId"));
+
+      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/message/broadcast", {
+        message: broadcastMessage,
+        senderId: userId, // or whatever key your backend expects
+      });
       console.log("Broadcast response:", res.data);
       toast.success(res.data.message || "Broadcast sent successfully");
+
+ 
       setBroadcastMessage("");
     } catch (err) {
       console.error("Broadcast error:", err);
+      toast.error(err?.response?.data?.message || "Failed to send broadcast");
     }
   };
 
