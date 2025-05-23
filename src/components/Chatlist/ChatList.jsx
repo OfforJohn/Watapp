@@ -32,7 +32,7 @@ export default function ChatList() {
     <div className="bg-panel-header-background flex flex-col max-h-screen z-20">
       {/* Sidebar Navigation */}
       <div
-        className={`fixed inset-y-0 left-0 bg-panel-header-background transform transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 bg-gray-500 transform transition-transform duration-300 ease-in-out ${
           navOpen ? "translate-x-[-30%]" : "-translate-x-[80%]"
         } w-64 z-30`}
       >
