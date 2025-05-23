@@ -136,9 +136,10 @@ const handleBroadcastToAll = async () => {
         onChange={handleFileChange}
       />
 
-      <div className="cursor-pointer">
-        <Avatar type="sm" image={userInfo?.profileImage} />
-      </div>
+      <div className="cursor-pointer font-bold text-white">
+  Chats
+</div>
+
 
       <div className="flex gap-6">
         <BsFillChatLeftTextFill
