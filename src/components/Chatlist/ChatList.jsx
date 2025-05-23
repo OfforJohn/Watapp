@@ -49,6 +49,7 @@ export default function ChatList() {
 <div className="fixed top-16 left-2 z-40 flex flex-col h-[calc(90vh-4rem)] text-white w-64">
   
   <button className="flex items-center space-x-2 p-2 hover:text-emerald-400"
+  onClick={() => setPageType("default")}
   >
     
     <BsChatDots size={20}/>
