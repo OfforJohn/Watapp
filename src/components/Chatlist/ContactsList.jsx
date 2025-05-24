@@ -57,13 +57,13 @@ function ContactsList() {
               dispatch({ type: reducerCases.SET_ALL_CONTACTS_PAGE })
             }
           />
-          <span className="">New Chat</span>
+          <span className=" pl-4 ">New Chat</span>
         </div>
       </div>
-      <div className="bg-search-input-container-background h-full flex-auto overflow-auto custom-scrollbar">
+      <div className="bg-search-input-container-background h-full  pl-14 flex-auto overflow-auto custom-scrollbar">
         <div className=" flex py-3 px-4 items-center gap-3 h-14">
           <div className="bg-panel-header-background flex items-center gap-5 px-3 py-1 rounded-lg flex-grow">
-            <div>
+            <div className="">
               <BiSearchAlt2 className="text-panel-header-icon cursor-pointer text-l" />
             </div>
             <div className="">
@@ -80,16 +80,21 @@ function ContactsList() {
         {Object.entries(searchContacts).map(([initialLetter, userList]) => {
           return (
             <div key={Date.now() + initialLetter}>
-              <div className="text-teal-light pl-10 py-5">{initialLetter}</div>
+              <div className="text-teal-light pl-14 py-5">{initialLetter}</div>
               {userList.map((contact) => {
                 return (
+                   <div className="pl-1">
                   <ChatLIstItem
                     data={contact}
                     isContactPage={true}
                     key={contact.id}
                   />
+               
+                </div>
                 );
+                  
               })}
+                
             </div>
           );
         })}
