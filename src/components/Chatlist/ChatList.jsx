@@ -78,22 +78,23 @@ export default function ChatList() {
       </div>
     </div>
 
-    {/* Main Content Scrollable */}
-    <div className="flex-1 flex flex-col bg-panel-header-background overflow-y-auto h-full pl-14">
-      {/* Header (optional if needed) */}
-      <div className="flex items-center p-2 shadow-md bg-panel-header-background sticky top-0 z-10"></div>
+    {/* Main Content */}
+      <div className="flex-1 flex flex-col bg-panel-header-background">
+        <div className="flex items-center p-2 shadow-md bg-panel-header-background"></div>
 
-      {/* Scrollable Body */}
-      {pageType === "default" && (
-        <>
-          <ChatListHeader />
-          <SearchBar />
-          <List />
-        </>
-      )}
-
-      {pageType === "all-contacts" && <ContactsList />}
+       {pageType === "default" && (
+  <div className="pl-14 flex flex-col h-full">
+    <ChatListHeader />
+    <SearchBar />
+    <div className="overflow-y-auto flex-1 pr-2">
+      <List />
     </div>
+  </div>
+)}
+
+
+        {pageType === "all-contacts" && <ContactsList />}
+      </div>
   </div>
 );
 
