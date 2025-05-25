@@ -49,6 +49,7 @@ export default function ChatLIstItem({ data, isContactPage = false }) {
     //   }
     // }
   };
+  console.log(data)
   return (
     <div
       className={`flex cursor-pointer items-center ${
