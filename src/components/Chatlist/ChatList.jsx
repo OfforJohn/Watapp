@@ -5,9 +5,13 @@ import SearchBar from "./SearchBar";
 import ContactsList from "./ContactsList";
 import { useStateProvider } from "@/context/StateContext";
 import Avatar from "../common/Avatar";
-import { BsChatDots } from "react-icons/bs";
+import { FaRegCircle } from "react-icons/fa";
+import { BsChatLeftText } from "react-icons/bs";
 import { CiSettings } from "react-icons/ci";
+import { IoIosPeople } from "react-icons/io";
 import { LuCircleDotDashed } from "react-icons/lu";
+import { TbChartDonut3 } from "react-icons/tb";
+import { BsChatText } from "react-icons/bs";
 
 export default function ChatList() {
   const [pageType, setPageType] = useState("default");
@@ -40,38 +44,68 @@ export default function ChatList() {
 
     {/* Persistent Hamburger Button */}
     <button
-      onClick={toggleNav}
+     // onClick={toggleNav}
       className="fixed top-4 left-2 z-40 p-2 text-xl text-white rounded focus:outline-none"
+        onClick={() => setPageType("default")}
     >
-      ☰
+      <BsChatLeftText size={25} className="text-white" />
+
+
     </button>
 
     {/* Sidebar Content */}
     <div className="fixed top-16 left-2 z-40 flex flex-col justify-between h-[calc(100vh-4rem)] text-white w-64">
       {/* Top Navigation Buttons */}
       <div className="flex flex-col space-y-4">
-        <button
+       
+
+          <button
+          className="flex items-center space-x-2 p-2 hover:text-emerald-400"
+          
+        >
+         <TbChartDonut3 size={24} className="text-gray-300" />
+
+          {navOpen && <span className="whitespace-nowrap">Chats</span>}
+        </button>
+          <button className="flex items-center space-x-2 p-2 hover:text-emerald-400">
+    <BsChatText  size={24}className="text-gray-300"/>
+          {navOpen && <span className="whitespace-nowrap">Bots</span>}
+        </button>
+
+         <button
           className="flex items-center space-x-2 p-2 hover:text-emerald-400"
           onClick={() => setPageType("default")}
         >
-          <BsChatDots size={20} />
+          <IoIosPeople size={30}  className="text-gray-300"/>
           {navOpen && <span className="whitespace-nowrap">Chats</span>}
         </button>
 
+           <hr className="border-t border-gray-500 my-2 w-11" />
+
         <button className="flex items-center space-x-2 p-2 hover:text-emerald-400">
-          <LuCircleDotDashed size={24} className="text-blue-500" />
+      <FaRegCircle
+  size={24}
+  className="text-indigo-500  hover:text-purple-500 transition-colors duration-300"
+/>
           {navOpen && <span className="whitespace-nowrap">Bots</span>}
         </button>
+     
+       
       </div>
+
+
+      
 
       {/* Bottom Navigation Buttons */}
       <div className="flex flex-col space-y-2 mb-4">
-        <button className="flex items-center space-x-2 p-2 hover:text-emerald-400">
+        
+           <hr className="border-t border-gray-500 my-2 w-11" />
+        <button className="flex items-center space-x-2 p-2 hover:text-emerald-400 -ml-1">
           <CiSettings size={33} />
           {navOpen && <span className="whitespace-nowrap">Settings</span>}
         </button>
 
-        <button className="flex items-center space-x-2 p-2 hover:text-emerald-400">
+        <button className="flex items-center space-x-2 p-2 hover:text-emerald-400 -ml-2">
           <Avatar type="sm" image={userInfo?.profileImage} />
           {navOpen && <span className="whitespace-nowrap">Profile</span>}
         </button>
