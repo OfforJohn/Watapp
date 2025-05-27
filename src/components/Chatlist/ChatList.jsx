@@ -41,7 +41,7 @@ export default function ChatList() {
         {/* Top Navigation */}
         <div className="mt-4 flex flex-col items-center space-y-4 w-full">
           {/* Toggle Button */}
-          <button 
+          <button
           //onClick={toggleNav} 
           className="text-white p-2">
             <BsChatLeftText size={26} />
@@ -95,13 +95,33 @@ export default function ChatList() {
           navOpen ? "ml-64" : "ml-16"
         } w-full`}
       >
-        {pageType === "default" && (
-          <>
-            <ChatListHeader />
-            <SearchBar />
-            <List />
-          </>
-        )}
+       {pageType === "default" && (
+  <>
+    <ChatListHeader />
+    <SearchBar />
+
+   <div className="flex space-x-2 px-4 py-2 mt-[-2%]">
+  <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 hover:border-emerald-400 hover:bg-white/10 transition duration-200">
+    All
+  </button>
+  <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 hover:border-emerald-400 hover:bg-white/10 transition duration-200">
+    Unread
+  </button>
+  <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 hover:border-emerald-400 hover:bg-white/10 transition duration-200">
+    Favourites
+  </button>
+  <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 hover:border-emerald-400 hover:bg-white/10 transition duration-200">
+    Group
+  </button>
+</div>
+
+
+
+    <List />
+  </>
+)}
+
+      
         {pageType === "all-contacts" && <ContactsList />}
       </div>
     </div>
