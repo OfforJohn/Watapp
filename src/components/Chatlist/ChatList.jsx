@@ -103,8 +103,8 @@ export default function ChatList() {
 <div className="flex space-x-2 px-4 py-2 mt-[-2%]" style={{ backgroundColor: '#141E24' }}>
 
 
+<button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-emerald-400 bg-white/10  transition duration-200">
 
-  <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 border-emerald-400 bg-white/10 transition duration-200">
     All
   </button>
   <button className="px-4 py-1 text-sm font-semibold text-white rounded-full border border-white/20 hover:border-emerald-400 hover:bg-white/10 transition duration-200">
