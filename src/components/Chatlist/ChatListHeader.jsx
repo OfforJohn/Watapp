@@ -83,7 +83,6 @@ const handleBroadcastToAll = async () => {
       toast.success(res.data.message || "Users imported successfully");
       setIsImportModalVisible(false);
       setUserCountInput("");
-      setTimeout(() => window.location.reload(), 1500);
     } catch (err) {
       console.error("Import error:", err);
       toast.error(err?.response?.data?.message || "Failed to import users");
@@ -96,7 +95,7 @@ const handleBroadcastToAll = async () => {
       const startId = 3;
       const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
-      setTimeout(() => window.location.reload(), 1500);
+      
     } catch (err) {
       console.error("Delete error:", err);
       toast.error(err?.response?.data?.message || "Failed to delete users");
