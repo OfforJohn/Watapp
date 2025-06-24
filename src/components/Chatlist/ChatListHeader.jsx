@@ -20,7 +20,9 @@ export default function ChatListHeader() {
   const [broadcastMessage, setBroadcastMessage] = useState("");
   const [botCount, setBotCount] = useState(8); // default 8 bots
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
-  const [userCountInput, setUserCountInput] = useState("");
+const [previewNumbers, setPreviewNumbers] = useState([]);
+const [isPreviewVisible, setIsPreviewVisible] = useState(false);
+
 
   const [sending, setSending] = useState(false);
 
@@ -64,30 +66,50 @@ const handleBroadcastToAll = async () => {
     setIsImportModalVisible(true);
   };
 
-  const generateAndImportUsers = async () => {
-    const count = parseInt(userCountInput, 10);
-    if (isNaN(count) || count <= 0) {
-      toast.error("Please enter a valid number");
+const handleCSVUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result;
+
+    const numbers = text
+      .split("\n")
+      .map(line => line.trim())
+      .filter(line => line && /^\+?\d{10,}$/.test(line));
+
+    if (!numbers.length) {
+      toast.error("No valid phone numbers found.");
       return;
     }
 
-    const fakeContacts = Array.from({ length: count }).map(() =>
-      faker.person.fullName()
-    );
-
-    try {
-      const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
-        startingId: 3,
-        contacts: fakeContacts,
-      });
-      toast.success(res.data.message || "Users imported successfully");
-      setIsImportModalVisible(false);
-      setUserCountInput("");
-    } catch (err) {
-      console.error("Import error:", err);
-      toast.error(err?.response?.data?.message || "Failed to import users");
-    }
+    // Show preview
+    setPreviewNumbers(numbers);
+    setIsPreviewVisible(true);
   };
+
+  reader.readAsText(file);
+};
+
+
+const confirmImportNumbers = async () => {
+  try {
+    const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
+      startingId: 3,
+      contacts: previewNumbers,
+    });
+
+    toast.success(res.data.message || "Users imported successfully");
+    setIsPreviewVisible(false);
+    setIsImportModalVisible(false);
+    setPreviewNumbers([]);
+  } catch (err) {
+    console.error("Import error:", err);
+    toast.error(err?.response?.data?.message || "Failed to import users");
+  }
+};
+
 
   const handleDeleteAllUsers = async () => {
     try {
@@ -127,110 +149,132 @@ const handleBroadcastToAll = async () => {
     },
   ];
 
-  return (
-    <div className="h-16 px-4 py-3 flex justify-between items-center">
-      <div className="cursor-pointer font-bold text-white">Chats</div>
+ return (
+  <div className="h-16 px-4 py-3 flex justify-between items-center">
+    <div className="cursor-pointer font-bold text-white">Chats</div>
 
-      <div className="flex gap-6">
-        <BsFillChatLeftTextFill
+    <div className="flex gap-6">
+      <BsFillChatLeftTextFill
+        className="text-panel-header-icon cursor-pointer text-xl"
+        title="New chat"
+        onClick={handleAllContactsPage}
+      />
+
+      <>
+        <BsThreeDotsVertical
           className="text-panel-header-icon cursor-pointer text-xl"
-          title="New chat"
-          onClick={handleAllContactsPage}
+          title="Menu"
+          onClick={showContextMenu}
+          id="context-opener"
         />
 
-        <>
-          <BsThreeDotsVertical
-            className="text-panel-header-icon cursor-pointer text-xl"
-            title="Menu"
-            onClick={showContextMenu}
-            id="context-opener"
+        {isContextMenuVisible && (
+          <ContextMenu
+            options={contextMenuOptions}
+            cordinates={contextMenuCordinates}
+            contextMenu={isContextMenuVisible}
+            setContextMenu={setIsContextMenuVisible}
+          />
+        )}
+      </>
+    </div>
+
+    {/* 📥 Import Modal */}
+    {isImportModalVisible && (
+      <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg w-96">
+          <h2 className="text-xl font-semibold mb-4">Import Contacts from CSV</h2>
+          <input
+            type="file"
+            accept=".csv"
+            className="w-full border px-3 py-2 rounded mb-4"
+            onChange={(e) => handleCSVUpload(e)}
+          />
+          <div className="flex justify-between">
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded"
+              onClick={() => setIsImportModalVisible(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* 📢 Broadcast Modal */}
+    {isBroadcastModalVisible && (
+      <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg w-96">
+          <h2 className="text-xl font-semibold mb-4">Broadcast Message to All</h2>
+
+          <label className="block mb-1 text-sm font-medium text-gray-700">Message</label>
+          <textarea
+            value={broadcastMessage}
+            onChange={(e) => setBroadcastMessage(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-md mb-4"
+            placeholder="Enter your message here"
+            rows="4"
           />
 
-          {isContextMenuVisible && (
-            <ContextMenu
-              options={contextMenuOptions}
-              cordinates={contextMenuCordinates}
-              contextMenu={isContextMenuVisible}
-              setContextMenu={setIsContextMenuVisible}
-            />
-          )}
-        </>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Number of Bot Replies</label>
+          <input
+            type="number"
+            min="1"
+            max="100"
+            value={botCount}
+            onChange={(e) => setBotCount(parseInt(e.target.value, 10))}
+            className="w-full p-2 border border-gray-300 rounded mb-4"
+          />
+
+          <div className="flex justify-between mt-2">
+            <button
+              className={`px-4 py-2 rounded text-white ${sending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"}`}
+              onClick={handleBroadcastToAll}
+              disabled={sending}
+            >
+              {sending ? "Sending..." : "Send"}
+            </button>
+
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded"
+              onClick={() => setIsBroadcastModalVisible(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </div>
+    )}
 
-      {/* 📥 Import Modal */}
-      {isImportModalVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Import Fake Users</h2>
-            <input
-              type="number"
-              className="w-full border px-3 py-2 rounded mb-4"
-              placeholder="How many users to generate?"
-              value={userCountInput}
-              onChange={(e) => setUserCountInput(e.target.value)}
-            />
-            <div className="flex justify-between">
-              <button
-                className="bg-green-600 text-white px-4 py-2 rounded"
-                onClick={generateAndImportUsers}
-              >
-                Import
-              </button>
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsImportModalVisible(false)}
-              >
-                Cancel
-              </button>
-            </div>
+    {/* 👁️ Preview Modal */}
+    {isPreviewVisible && (
+      <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
+        <div className="bg-white p-6 rounded-lg w-[400px] max-h-[80vh] overflow-y-auto">
+          <h2 className="text-lg font-semibold mb-4">Preview Numbers to Import</h2>
+          <ul className="mb-4 space-y-1 text-sm">
+            {previewNumbers.map((num, idx) => (
+              <li key={idx} className="border-b pb-1">{num}</li>
+            ))}
+          </ul>
+          <div className="flex justify-between mt-2">
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+              onClick={confirmImportNumbers}
+            >
+              Confirm Import
+            </button>
+            <button
+              className="bg-gray-400 text-white px-4 py-2 rounded"
+              onClick={() => setIsPreviewVisible(false)}
+            >
+              Cancel
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
+  </div>
+);
 
-      {/* 📢 Broadcast Modal */}
-      {isBroadcastModalVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Broadcast Message to All</h2>
-
-            <label className="block mb-1 text-sm font-medium text-gray-700">Message</label>
-            <textarea
-              value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md mb-4"
-              placeholder="Enter your message here"
-              rows="4"
-            />
-
-            <label className="block mb-1 text-sm font-medium text-gray-700">Number of Bot Replies</label>
-            <input
-              type="number"
-              min="1"
-              max="100"
-              value={botCount}
-              onChange={(e) => setBotCount(parseInt(e.target.value, 10))}
-              className="w-full p-2 border border-gray-300 rounded mb-4"
-            />
-
-            <div className="flex justify-between mt-2">
-             <button
-  className={`px-4 py-2 rounded text-white ${sending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"}`}
-  onClick={handleBroadcastToAll}
-  disabled={sending}
->
-  {sending ? "Sending..." : "Send"}
-</button>
-
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsBroadcastModalVisible(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 }
