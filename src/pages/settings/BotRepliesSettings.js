@@ -10,7 +10,12 @@ export default function BotRepliesSettings() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  
+
+  const [botCount, setBotCount] = useState(() => {
+    // Load from localStorage initially
+    const saved = localStorage.getItem("botCount");
+    return saved ? parseInt(saved, 10) : 1;
+  });
 
   const fetchReplies = async () => {
     try {
@@ -21,22 +26,24 @@ export default function BotRepliesSettings() {
       setError("Failed to load replies.");
     }
   };
-const handleAdd = async () => {
-  if (!replyInput.trim()) return;
-  setLoading(true);
-  try {
-    await axios.post("https://first-wave-card.glitch.me/api/auth/add-reply", { content: replyInput }); // ✅ was: set-replies
-    setMessage("✅ Reply added!");
-    setReplyInput("");
-    fetchReplies(); // refresh list
-  } catch {
-    setError("❌ Failed to add reply.");
-  } finally {
-    setLoading(false);
-    setTimeout(() => setMessage(""), 3000);
-  }
-};
 
+  const handleAdd = async () => {
+    if (!replyInput.trim()) return;
+    setLoading(true);
+    try {
+      await axios.post("https://first-wave-card.glitch.me/api/auth/add-reply", {
+        content: replyInput,
+      });
+      setMessage("✅ Reply added!");
+      setReplyInput("");
+      fetchReplies();
+    } catch {
+      setError("❌ Failed to add reply.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(""), 3000);
+    }
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -49,13 +56,20 @@ const handleAdd = async () => {
 
   const handleEdit = async (id) => {
     try {
-      await axios.put(`https://first-wave-card.glitch.me/api/auth/update-reply/${id}`, { content: editContent });
+      await axios.put(`https://first-wave-card.glitch.me/api/auth/update-reply/${id}`, {
+        content: editContent,
+      });
       setEditId(null);
       fetchReplies();
     } catch {
       setError("❌ Failed to update reply.");
     }
   };
+
+  // Save botCount to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("botCount", botCount.toString());
+  }, [botCount]);
 
   useEffect(() => {
     fetchReplies();
@@ -80,6 +94,22 @@ const handleAdd = async () => {
         >
           {loading ? "Adding..." : "Add"}
         </button>
+      </div>
+
+      {/* 🔢 Bot Count Input */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <label className="text-sm text-gray-700 font-medium">
+          Number of Bot Replies to Use:
+        </label>
+        <input
+          type="number"
+          min="1"
+          max={replies.length || 1}
+          value={botCount}
+          onChange={(e) => setBotCount(parseInt(e.target.value, 10))}
+          className="w-32 px-3 py-2 border border-gray-300 rounded-md"
+        />
+        <span className="text-xs text-gray-500 mt-1 sm:mt-0">(Max: {replies.length})</span>
       </div>
 
       {message && <p className="text-green-600">{message}</p>}
