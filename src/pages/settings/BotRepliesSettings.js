@@ -11,11 +11,24 @@ export default function BotRepliesSettings() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [botCount, setBotCount] = useState(() => {
-    // Load from localStorage initially
-    const saved = localStorage.getItem("botCount");
-    return saved ? parseInt(saved, 10) : 1;
-  });
+  const [botCount, setBotCount] = useState(1); // Initialize with default
+
+  // ✅ Safely read botCount from localStorage (client-side only)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("botCount");
+      if (saved) {
+        setBotCount(parseInt(saved, 10));
+      }
+    }
+  }, []);
+
+  // ✅ Save changes to botCount in localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("botCount", botCount.toString());
+    }
+  }, [botCount]);
 
   const fetchReplies = async () => {
     try {
@@ -65,11 +78,6 @@ export default function BotRepliesSettings() {
       setError("❌ Failed to update reply.");
     }
   };
-
-  // Save botCount to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem("botCount", botCount.toString());
-  }, [botCount]);
 
   useEffect(() => {
     fetchReplies();
