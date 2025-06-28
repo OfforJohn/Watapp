@@ -13,10 +13,11 @@ import { CHECK_USER_ROUTE } from "@/utils/ApiRoutes";
 export default function Login() {
   const router = useRouter();
   const [{ userInfo, newUser }, dispatch] = useStateProvider();
+
   useEffect(() => {
-    console.log({ userInfo });
     if (userInfo?.id && !newUser) router.push("/");
   }, [userInfo, newUser, router]);
+
   const login = async () => {
     const provider = new GoogleAuthProvider();
     const {
@@ -25,11 +26,10 @@ export default function Login() {
 
     try {
       if (email) {
-        const { data } = await axios.post(CHECK_USER_ROUTE, {
-          email,
-        });
+        const { data } = await axios.post(CHECK_USER_ROUTE, { email });
 
         if (!data.status) {
+          // New user
           dispatch({ type: reducerCases.SET_NEW_USER, newUser: true });
           dispatch({
             type: reducerCases.SET_USER_INFO,
@@ -40,9 +40,15 @@ export default function Login() {
               status: "Available",
             },
           });
-          router.push("/onboarding");
+
+          // Delay ensures localStorage isn't interrupted by navigation
+          setTimeout(() => {
+            router.push("/onboarding");
+          }, 100);
         } else {
-          localStorage.setItem("userId", data.data.id); // ✅ Move here
+          // Existing user
+          localStorage.setItem("userId", data.data.id); // ✅ Ensures it's written before navigating
+
           dispatch({
             type: reducerCases.SET_USER_INFO,
             userInfo: {
@@ -53,15 +59,18 @@ export default function Login() {
               status: data.data.about,
             },
           });
-          router.push("/");
+
+          // Delay router push to ensure localStorage is written
+          setTimeout(() => {
+            router.push("/");
+          }, 100);
         }
-        
       }
     } catch (error) {
       console.log({ error });
     }
   };
-  
+
   return (
     <div className="flex justify-center items-center bg-panel-header-background h-screen w-screen flex-col gap-6">
       <div className="flex items-center justify-center gap-2 text-white">

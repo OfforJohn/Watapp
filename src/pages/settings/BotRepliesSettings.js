@@ -11,9 +11,9 @@ export default function BotRepliesSettings() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const [botCount, setBotCount] = useState(1); // Initialize with default
+  const [botCount, setBotCount] = useState(1);
+  const [delays, setDelays] = useState({}); // 🆕 Manage delay per bot in state
 
-  // ✅ Safely read botCount from localStorage (client-side only)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("botCount");
@@ -23,7 +23,6 @@ export default function BotRepliesSettings() {
     }
   }, []);
 
-  // ✅ Save changes to botCount in localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("botCount", botCount.toString());
@@ -33,7 +32,16 @@ export default function BotRepliesSettings() {
   const fetchReplies = async () => {
     try {
       const res = await axios.get("https://first-wave-card.glitch.me/api/auth/get-replies");
-      setReplies(res.data.replies || []);
+      const replies = res.data.replies || [];
+      setReplies(replies);
+
+      // 🧠 Load delays from localStorage
+      const delayObj = {};
+      replies.forEach((r) => {
+        const val = localStorage.getItem(`delay_${r.id}`);
+        if (val) delayObj[r.id] = parseInt(val, 10) / 1000; // Convert ms to sec
+      });
+      setDelays(delayObj);
     } catch (err) {
       console.error("Failed to fetch replies", err);
       setError("Failed to load replies.");
@@ -61,6 +69,7 @@ export default function BotRepliesSettings() {
   const handleDelete = async (id) => {
     try {
       await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-reply/${id}`);
+      localStorage.removeItem(`delay_${id}`);
       fetchReplies();
     } catch {
       setError("❌ Failed to delete reply.");
@@ -77,6 +86,21 @@ export default function BotRepliesSettings() {
     } catch {
       setError("❌ Failed to update reply.");
     }
+  };
+
+  const handleDelayChange = (id, seconds) => {
+    const updated = { ...delays, [id]: seconds };
+    setDelays(updated);
+    localStorage.setItem(`delay_${id}`, (seconds * 1000).toString());
+  };
+
+  const handleResetAllDelays = () => {
+    const cleared = {};
+    replies.forEach((r) => {
+      cleared[r.id] = 0;
+      localStorage.removeItem(`delay_${r.id}`);
+    });
+    setDelays(cleared);
   };
 
   useEffect(() => {
@@ -118,6 +142,13 @@ export default function BotRepliesSettings() {
           className="w-32 px-3 py-2 border border-gray-300 rounded-md"
         />
         <span className="text-xs text-gray-500 mt-1 sm:mt-0">(Max: {replies.length})</span>
+      </div>
+
+      {/* Reset Button */}
+      <div className="flex justify-end">
+        <button onClick={handleResetAllDelays} className="text-sm text-blue-500">
+          Reset All Delays
+        </button>
       </div>
 
       {message && <p className="text-green-600">{message}</p>}
@@ -165,6 +196,15 @@ export default function BotRepliesSettings() {
                   >
                     <FiTrash2 />
                   </button>
+                  <input
+                    type="number"
+                    className="w-20 px-1 py-1 text-xs border rounded-md"
+                    placeholder="Delay (sec)"
+                    value={delays[r.id] || ""}
+                    onChange={(e) =>
+                      handleDelayChange(r.id, parseInt(e.target.value || "0", 10))
+                    }
+                  />
                 </div>
               </>
             )}

@@ -37,6 +37,8 @@ React.useEffect(() => {
 
   const [sending, setSending] = useState(false);
 
+const botDelays = [10000, 20000, 30000]; // 10s, 20s, 30s
+
 const handleBroadcastToAll = async () => {
   if (sending) return;
 
@@ -45,15 +47,28 @@ const handleBroadcastToAll = async () => {
     return;
   }
 
+  
+
   try {
     setSending(true);
     const userId = parseInt(localStorage.getItem("userId"));
     const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
+const botStartId = 3; // The first bot starts at ID 3
+const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
+  const botId = botStartId + i;
+  const delay = localStorage.getItem(`delay_${botId}`);
+  return parseInt(delay || "0", 10);
+});
+console.log("🚀 Sending with bot delays:", botDelays);
+
+
+    // e.g., [10000, 20000, 30000, ...] – each bot waits 10s more than the previous
 
     await axios.post("https://first-wave-card.glitch.me/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
+      botDelays,
     });
 
     toast.success("Broadcast sent successfully");
@@ -65,6 +80,7 @@ const handleBroadcastToAll = async () => {
     setSending(false);
   }
 };
+
 
   const showContextMenu = (e) => {
     e.preventDefault();
