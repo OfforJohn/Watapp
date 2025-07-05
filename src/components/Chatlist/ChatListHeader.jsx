@@ -97,7 +97,8 @@ console.log("🚀 Sending with bot delays:", botDelays);
         .map((line) => line.trim())
         .filter((line) => line && /^\+?\d{10,}$/.test(line))
       .map((number) => {
-  const fullName = faker.person.fullName({ sex: selectedGender }); // ✅ just a string
+        
+        const fullName = number; // ✅ Use number as the name
   const randomIndex = Math.floor(Math.random() * 1000) + 1;
   const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
   return { number, name: fullName, avatar }; // ✅ name is a string
