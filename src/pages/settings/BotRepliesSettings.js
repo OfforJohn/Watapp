@@ -31,7 +31,7 @@ export default function BotRepliesSettings() {
 
   const fetchReplies = async () => {
     try {
-      const res = await axios.get("https://first-wave-card.glitch.me/api/auth/get-replies");
+      const res = await axios.get("https://render-backend-ksnp.onrender.com/api/auth/get-replies");
       const replies = res.data.replies || [];
       setReplies(replies);
 
@@ -52,7 +52,7 @@ export default function BotRepliesSettings() {
     if (!replyInput.trim()) return;
     setLoading(true);
     try {
-      await axios.post("https://first-wave-card.glitch.me/api/auth/add-reply", {
+      await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-reply", {
         content: replyInput,
       });
       setMessage("✅ Reply added!");
@@ -68,7 +68,7 @@ export default function BotRepliesSettings() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-reply/${id}`);
+      await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-reply/${id}`);
       localStorage.removeItem(`delay_${id}`);
       fetchReplies();
     } catch {
@@ -78,7 +78,7 @@ export default function BotRepliesSettings() {
 
   const handleEdit = async (id) => {
     try {
-      await axios.put(`https://first-wave-card.glitch.me/api/auth/update-reply/${id}`, {
+      await axios.put(`https://render-backend-ksnp.onrender.com/api/auth/update-reply/${id}`, {
         content: editContent,
       });
       setEditId(null);

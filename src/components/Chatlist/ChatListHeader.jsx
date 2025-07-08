@@ -7,6 +7,8 @@ import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { faker } from "@faker-js/faker";
+import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
+
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ChatListHeader() {
@@ -26,6 +28,19 @@ export default function ChatListHeader() {
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [sending, setSending] = useState(false);
 
+  const refetchContacts = async () => {
+  try {
+    const {
+      data: { users, onlineUsers },
+    } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userInfo.id}`);
+    dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+    dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+  } catch (err) {
+    console.error("❌ Failed to refresh contacts:", err);
+  }
+};
+
+
 
 const handleBroadcastToAll = async () => {
   if (sending) return;
@@ -35,24 +50,40 @@ const handleBroadcastToAll = async () => {
     return;
   }
 
-  
-
   try {
     setSending(true);
+        // 🔁 Poll 10 times every 2 seconds
+    let pollCount = 0;
+    const pollInterval = setInterval(async () => {
+      try {
+        const {
+          data: { users, onlineUsers },
+        } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userId}`);
+        dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+        dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+        console.log(`📡 Polling #${pollCount + 1}...`);
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+
+      pollCount++;
+      if (pollCount >= 30) {
+        clearInterval(pollInterval);
+        console.log("✅ Finished polling after 10 times.");
+      }
+    }, 5000); // 2 seconds
     const userId = parseInt(localStorage.getItem("userId"));
     const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
-const botStartId = 3; // The first bot starts at ID 3
-const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
-  const botId = botStartId + i;
-  const delay = localStorage.getItem(`delay_${botId}`);
-  return parseInt(delay || "0", 10);
-});
-console.log("🚀 Sending with bot delays:", botDelays);
+    const botStartId = 3;
+    const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
+      const botId = botStartId + i;
+      const delay = localStorage.getItem(`delay_${botId}`);
+      return parseInt(delay || "0", 10);
+    });
 
+    console.log("🚀 Sending with bot delays:", botDelays);
 
-    // e.g., [10000, 20000, 30000, ...] – each bot waits 10s more than the previous
-
-    await axios.post("https://first-wave-card.glitch.me/api/auth/message/broadcast", {
+    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
@@ -60,6 +91,9 @@ console.log("🚀 Sending with bot delays:", botDelays);
     });
 
     toast.success("Broadcast sent successfully");
+
+
+
     setBroadcastMessage("");
     setIsBroadcastModalVisible(false);
   } catch (err) {
@@ -68,6 +102,7 @@ console.log("🚀 Sending with bot delays:", botDelays);
     setSending(false);
   }
 };
+
 
 
 
@@ -126,12 +161,14 @@ const confirmImportNumbers = async () => {
       about: "",                           // optional, or use a default
     }));
 
-    const res = await axios.post("https://first-wave-card.glitch.me/api/auth/add-batch-users", {
+    const res = await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-batch-users", {
       startingId: 3,
       contacts: payload,
     });
 
     toast.success(res.data.message || "Users imported successfully");
+    
+await refetchContacts();
     setIsPreviewVisible(false);
     setIsImportModalVisible(false);
     setPreviewNumbers([]);
@@ -145,10 +182,15 @@ const confirmImportNumbers = async () => {
 
   const handleDeleteAllUsers = async () => {
     try {
+
+      
+await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`https://first-wave-card.glitch.me/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
+      
+await refetchContacts();
     } catch (err) {
       console.error("Delete error:", err);
       toast.error(err?.response?.data?.message || "Failed to delete users");
