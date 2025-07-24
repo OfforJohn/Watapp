@@ -98,7 +98,7 @@ const handleBroadcastToAll = async () => {
     }, pollInterval); // Adjusted polling interval
 
     // Collect bot delay information
-    const botStartId = 3;  // Starting bot ID
+    const botStartId = 10;  // Starting bot ID
     const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
       const botId = botStartId + i;
       const delay = localStorage.getItem(`delay_${botId}`);
@@ -108,7 +108,7 @@ const handleBroadcastToAll = async () => {
     console.log("🚀 Sending with bot delays:", botDelays);
 
     // Send the broadcast message to the server
-    await axios.post("http://localhost:3005/api/auth/message/broadcast", {
+    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
@@ -192,7 +192,7 @@ const confirmImportNumbers = async () => {
       about: "",                           // optional, or use a default
     }));
 
-    const res = await axios.post("http://localhost:3005/api/auth/add-batch-users", {
+    const res = await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-batch-users", {
       startingId: 3,
       contacts: payload,
     });
@@ -218,7 +218,7 @@ await refetchContacts();
 await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`http://localhost:3005/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
       
 await refetchContacts();

@@ -14,6 +14,7 @@ export default function BotRepliesSettings() {
   const [botCount, setBotCount] = useState(1);
   const [delays, setDelays] = useState({}); // 🆕 Manage delay per bot in state
 
+  // Load bot count from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("botCount");
@@ -29,17 +30,22 @@ export default function BotRepliesSettings() {
     }
   }, [botCount]);
 
+  // Fetch the replies and their delays from localStorage
   const fetchReplies = async () => {
     try {
-      const res = await axios.get("http://localhost:3005/api/auth/get-replies");
+      const res = await axios.get("https://render-backend-ksnp.onrender.com/api/auth/get-replies");
       const replies = res.data.replies || [];
       setReplies(replies);
 
       // 🧠 Load delays from localStorage
       const delayObj = {};
       replies.forEach((r) => {
-        const val = localStorage.getItem(`delay_${r.id}`);
-        if (val) delayObj[r.id] = parseInt(val, 10) / 1000; // Convert ms to sec
+        const delay = localStorage.getItem(`delay_${r.id}`);
+        if (delay !== null) {
+          delayObj[r.id] = parseInt(delay, 10) / 1000; // Convert ms to sec
+        } else {
+          delayObj[r.id] = 0; // If no delay, set to 0
+        }
       });
       setDelays(delayObj);
     } catch (err) {
@@ -52,7 +58,7 @@ export default function BotRepliesSettings() {
     if (!replyInput.trim()) return;
     setLoading(true);
     try {
-      await axios.post("http://localhost:3005/api/auth/add-reply", {
+      await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-reply", {
         content: replyInput,
       });
       setMessage("✅ Reply added!");
@@ -68,7 +74,7 @@ export default function BotRepliesSettings() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3005/api/auth/delete-reply/${id}`);
+      await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-reply/${id}`);
       localStorage.removeItem(`delay_${id}`);
       fetchReplies();
     } catch {
@@ -78,7 +84,7 @@ export default function BotRepliesSettings() {
 
   const handleEdit = async (id) => {
     try {
-      await axios.put(`http://localhost:3005/api/auth/update-reply/${id}`, {
+      await axios.put(`https://render-backend-ksnp.onrender.com/api/auth/update-reply/${id}`, {
         content: editContent,
       });
       setEditId(null);
@@ -88,10 +94,11 @@ export default function BotRepliesSettings() {
     }
   };
 
+  // Handle delay change and sync with localStorage
   const handleDelayChange = (id, seconds) => {
     const updated = { ...delays, [id]: seconds };
     setDelays(updated);
-    localStorage.setItem(`delay_${id}`, (seconds * 1000).toString());
+    localStorage.setItem(`delay_${id}`, (seconds * 1000).toString()); // Convert sec to ms for storage
   };
 
   const handleResetAllDelays = () => {
