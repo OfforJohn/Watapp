@@ -52,9 +52,33 @@ const handleBroadcastToAll = async () => {
 
   try {
     setSending(true);
-        // 🔁 Poll 10 times every 2 seconds
+
+    // Get the user ID and bot count from localStorage
+    const userId = parseInt(localStorage.getItem("userId"));
+    const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
+
+    // Retrieve the imported number count from localStorage
+    const numberCount = parseInt(localStorage.getItem('importedNumberCount') || '0', 10);
+
+    // Dynamically adjust polling settings based on the imported number count
     let pollCount = 0;
-    const pollInterval = setInterval(async () => {
+    let pollInterval = 5000;  // Default: 5 seconds between polling
+    let maxPollCount = 30;    // Default max polling attempts
+
+    // Adjust polling based on the number of imported contacts (numberCount)
+   if (numberCount > 1000) {
+  pollInterval = 4800;  // 4.8 seconds for each poll
+  maxPollCount = 50;    // 50 polls
+
+    } else if (numberCount > 500) {
+      pollInterval = 5000;    // 7 seconds for 500-1000 numbers
+      maxPollCount = 40;      // Poll up to 60 times
+    }
+
+    console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
+
+    // Start polling process
+    const pollIntervalId = setInterval(async () => {
       try {
         const {
           data: { users, onlineUsers },
@@ -67,14 +91,14 @@ const handleBroadcastToAll = async () => {
       }
 
       pollCount++;
-      if (pollCount >= 30) {
-        clearInterval(pollInterval);
-        console.log("✅ Finished polling after 10 times.");
+      if (pollCount >= maxPollCount) {
+        clearInterval(pollIntervalId);
+        console.log("✅ Finished polling.");
       }
-    }, 5000); // 2 seconds
-    const userId = parseInt(localStorage.getItem("userId"));
-    const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
-    const botStartId = 3;
+    }, pollInterval); // Adjusted polling interval
+
+    // Collect bot delay information
+    const botStartId = 3;  // Starting bot ID
     const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
       const botId = botStartId + i;
       const delay = localStorage.getItem(`delay_${botId}`);
@@ -83,7 +107,8 @@ const handleBroadcastToAll = async () => {
 
     console.log("🚀 Sending with bot delays:", botDelays);
 
-    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
+    // Send the broadcast message to the server
+    await axios.post("http://localhost:3005/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
@@ -92,16 +117,16 @@ const handleBroadcastToAll = async () => {
 
     toast.success("Broadcast sent successfully");
 
-
-
     setBroadcastMessage("");
     setIsBroadcastModalVisible(false);
+
   } catch (err) {
     console.error("Broadcast error:", err);
   } finally {
     setSending(false);
   }
 };
+
 
 
 
@@ -139,6 +164,12 @@ const handleBroadcastToAll = async () => {
   return { number, name: fullName, avatar }; // ✅ name is a string
 });
 
+    const numberCount = contacts.length;
+    console.log("Total valid numbers:", numberCount);
+
+    // Save the numberCount to localStorage
+    localStorage.setItem('importedNumberCount', numberCount);
+
       if (!contacts.length) {
         toast.error("No valid phone numbers found.");
         return;
@@ -161,7 +192,7 @@ const confirmImportNumbers = async () => {
       about: "",                           // optional, or use a default
     }));
 
-    const res = await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-batch-users", {
+    const res = await axios.post("http://localhost:3005/api/auth/add-batch-users", {
       startingId: 3,
       contacts: payload,
     });
@@ -187,7 +218,7 @@ await refetchContacts();
 await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`http://localhost:3005/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
       
 await refetchContacts();

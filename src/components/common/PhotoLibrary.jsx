@@ -3,15 +3,15 @@ import { IoClose } from "react-icons/io5";
 
 export default function PhotoLibrary({ setImage, hidePhotoLibrary }) {
   const images = [
-    "/avatars/1.png",
-    "/avatars/2.png",
-    "/avatars/3.png",
-    "/avatars/4.png",
-    "/avatars/5.png",
-    "/avatars/6.png",
-    "/avatars/7.png",
-    "/avatars/8.png",
-    "/avatars/9.png",
+    "/avatars/female/1.png",
+    "/avatars/male/2.png",
+    "/avatars/female/3.png",
+    "/avatars/male/4.png",
+    "/avatars/female/5.png",
+    "/avatars/male/6.png",
+    "/avatars/female/7.png",
+    "/avatars/male/8.png",
+    "/avatars/female/9.png",
   ];
 
   return (
