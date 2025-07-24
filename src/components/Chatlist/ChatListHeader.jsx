@@ -72,7 +72,7 @@ const handleBroadcastToAll = async () => {
 
     } else if (numberCount > 500) {
       pollInterval = 5000;    // 7 seconds for 500-1000 numbers
-      maxPollCount = 40;      // Poll up to 60 times
+      maxPollCount = 50;      // Poll up to 60 times
     }
 
     console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
@@ -97,13 +97,14 @@ const handleBroadcastToAll = async () => {
       }
     }, pollInterval); // Adjusted polling interval
 
-    // Collect bot delay information
-    const botStartId = 10;  // Starting bot ID
-    const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
-      const botId = botStartId + i;
-      const delay = localStorage.getItem(`delay_${botId}`);
-      return parseInt(delay || "0", 10);
-    });
+   const botStartId = 9;  // Starting bot ID (1, 2, 3, etc.)
+const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
+  const botId = botStartId + i;  // This will generate bot IDs from 1, 2, 3, ..., etc.
+  const delayKey = `delay_${botId}`;  // Accessing the delay based on bot ID (e.g., delay_1, delay_10)
+  const delay = localStorage.getItem(delayKey);  // Getting delay from localStorage
+  return parseInt(delay || "0", 10);  // Default to 0 if no delay is found
+});
+
 
     console.log("🚀 Sending with bot delays:", botDelays);
 
