@@ -72,7 +72,7 @@ const handleBroadcastToAll = async () => {
 
     } else if (numberCount > 500) {
       pollInterval = 5000;    // 7 seconds for 500-1000 numbers
-      maxPollCount = 50;      // Poll up to 60 times
+      maxPollCount = 240;      // Poll up to 60 times
     }
 
     console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
