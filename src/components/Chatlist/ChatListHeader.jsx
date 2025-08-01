@@ -111,7 +111,7 @@ const handleBroadcastToAll = async () => {
 
     console.log("🚀 Sending with bot delays:", botDelays);
 
-    await axios.post("http://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
+    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
