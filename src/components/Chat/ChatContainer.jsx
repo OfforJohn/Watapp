@@ -15,6 +15,10 @@ export default function ChatContainer() {
 
   const containerRef = useRef(null);
 
+  console.log(messages)
+  console.log(currentChatUser)
+  console.log(userInfo)
+
   useEffect(() => {
     const container = containerRef.current;
     const lastMessage =

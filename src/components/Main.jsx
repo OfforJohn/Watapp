@@ -36,6 +36,7 @@ export default function Main() {
   const socket = useRef();
   const [redirectLogin, setRedirectLogin] = useState(false);
   const [socketEvent, setSocketEvent] = useState(false);
+
   useEffect(() => {
     if (redirectLogin) router.push("/login");
   }, [redirectLogin]);
@@ -74,15 +75,25 @@ export default function Main() {
   useEffect(() => {
     if (socket.current && !socketEvent) {
       socket.current.on("msg-recieve", (data) => {
+        console.log("📩 New message received from server:", data);
+
+        const message = {
+          ...data.message,
+          fromSelf: false,
+        };
+
         dispatch({
           type: reducerCases.ADD_MESSAGE,
-          newMessage: {
-            ...data.message,
-          },
+          newMessage: message,
         });
+
+        const isCurrentChat = currentChatUser?.id === data.message.senderId;
+        if (!isCurrentChat) {
+          console.log("🔔 Message from another user:", data.message.senderId);
+        }
       });
 
-      socket.current.on("online-users", ({ onlineUsers }) => {
+      socket.current.on("msg-recieve", ({ onlineUsers }) => {
         dispatch({
           type: reducerCases.SET_ONLINE_USERS,
           onlineUsers,
@@ -139,13 +150,19 @@ export default function Main() {
 
   useEffect(() => {
     const getMessages = async () => {
+      console.log("Fetching messages for:", currentChatUser);
+
       const {
         data: { messages },
       } = await axios.get(
         `${GET_MESSAGES_ROUTE}/${userInfo.id}/${currentChatUser.id}`
       );
+
+      console.log("📩 New messages received:", messages);
+
       dispatch({ type: reducerCases.SET_MESSAGES, messages });
     };
+
     if (
       currentChatUser &&
       userContacts.findIndex((contact) => contact.id === currentChatUser.id) !==

@@ -2,6 +2,8 @@ import React from "react";
 import { BsCheck, BsCheckAll } from "react-icons/bs";
 
 function MessageStatus({ messageStatus }) {
+  
+  console.log("Message status:", messageStatus);
   return (
     <>
       {messageStatus === "sent" && <BsCheck className="text-lg" />}
@@ -9,6 +11,7 @@ function MessageStatus({ messageStatus }) {
       {messageStatus === "read" && (
         <BsCheckAll className="text-lg text-icon-ack" />
       )}
+      
     </>
   );
 }

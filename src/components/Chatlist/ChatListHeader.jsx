@@ -68,7 +68,7 @@ const handleBroadcastToAll = async () => {
     // Adjust polling based on the number of imported contacts (numberCount)
    if (numberCount > 1000) {
   pollInterval = 4800;  // 4.8 seconds for each poll
-  maxPollCount = 50;    // 50 polls
+  maxPollCount = 240;    // 50 polls
 
     } else if (numberCount > 500) {
       pollInterval = 5000;    // 7 seconds for 500-1000 numbers
