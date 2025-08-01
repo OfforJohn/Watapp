@@ -41,6 +41,7 @@ export default function ChatListHeader() {
 };
 
 
+let globalPollIntervalId = null;
 
 const handleBroadcastToAll = async () => {
   if (sending) return;
@@ -50,35 +51,35 @@ const handleBroadcastToAll = async () => {
     return;
   }
 
+  // ✅ Clear previous polling if it exists
+  if (globalPollIntervalId) {
+    clearInterval(globalPollIntervalId);
+    console.log("⛔ Cleared previous poller");
+  }
+
+  let pollCount = 0;
+  let pollInterval = 5000;
+  let maxPollCount = 30;
+
   try {
     setSending(true);
 
-    // Get the user ID and bot count from localStorage
     const userId = parseInt(localStorage.getItem("userId"));
     const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
+    const numberCount = parseInt(localStorage.getItem("importedNumberCount") || "0", 10);
 
-    // Retrieve the imported number count from localStorage
-    const numberCount = parseInt(localStorage.getItem('importedNumberCount') || '0', 10);
-
-    // Dynamically adjust polling settings based on the imported number count
-    let pollCount = 0;
-    let pollInterval = 5000;  // Default: 5 seconds between polling
-    let maxPollCount = 30;    // Default max polling attempts
-
-    // Adjust polling based on the number of imported contacts (numberCount)
-   if (numberCount > 1000) {
-  pollInterval = 4800;  // 4.8 seconds for each poll
-  maxPollCount = 240;    // 50 polls
-
+    if (numberCount > 1000) {
+      pollInterval = 4800;
+      maxPollCount = 240;
     } else if (numberCount > 500) {
-      pollInterval = 5000;    // 7 seconds for 500-1000 numbers
-      maxPollCount = 240;      // Poll up to 60 times
+      pollInterval = 5000;
+      maxPollCount = 240;
     }
 
     console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
 
-    // Start polling process
-    const pollIntervalId = setInterval(async () => {
+    // ✅ Set global poller
+    globalPollIntervalId = setInterval(async () => {
       try {
         const {
           data: { users, onlineUsers },
@@ -92,23 +93,22 @@ const handleBroadcastToAll = async () => {
 
       pollCount++;
       if (pollCount >= maxPollCount) {
-        clearInterval(pollIntervalId);
+        clearInterval(globalPollIntervalId);
+        globalPollIntervalId = null;
         console.log("✅ Finished polling.");
       }
-    }, pollInterval); // Adjusted polling interval
+    }, pollInterval);
 
-   const botStartId = 9;  // Starting bot ID (1, 2, 3, etc.)
-const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
-  const botId = botStartId + i;  // This will generate bot IDs from 1, 2, 3, ..., etc.
-  const delayKey = `delay_${botId}`;  // Accessing the delay based on bot ID (e.g., delay_1, delay_10)
-  const delay = localStorage.getItem(delayKey);  // Getting delay from localStorage
-  return parseInt(delay || "0", 10);  // Default to 0 if no delay is found
-});
-
+    const botStartId = 9;
+    const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
+      const botId = botStartId + i;
+      const delayKey = `delay_${botId}`;
+      const delay = localStorage.getItem(delayKey);
+      return parseInt(delay || "0", 10);
+    });
 
     console.log("🚀 Sending with bot delays:", botDelays);
 
-    // Send the broadcast message to the server
     await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
@@ -116,17 +116,22 @@ const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
       botDelays,
     });
 
-    toast.success("Broadcast sent successfully");
+    // ✅ Stop polling after broadcast
+    clearInterval(globalPollIntervalId);
+    globalPollIntervalId = null;
+    console.log("🛑 Polling stopped after broadcast");
 
+    toast.success("Broadcast sent successfully");
     setBroadcastMessage("");
     setIsBroadcastModalVisible(false);
-
   } catch (err) {
     console.error("Broadcast error:", err);
   } finally {
     setSending(false);
   }
 };
+
+
 
 
 
