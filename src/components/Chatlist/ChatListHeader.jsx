@@ -8,6 +8,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { faker } from "@faker-js/faker";
 import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
+import { useRef, useEffect } from "react";
+
 
 import "react-toastify/dist/ReactToastify.css";
 
@@ -40,8 +42,7 @@ export default function ChatListHeader() {
   }
 };
 
-
-let globalPollIntervalId = null;
+const pollIntervalRef = useRef(null);
 
 const handleBroadcastToAll = async () => {
   if (sending) return;
@@ -51,15 +52,12 @@ const handleBroadcastToAll = async () => {
     return;
   }
 
-  // ✅ Clear previous polling if it exists
-  if (globalPollIntervalId) {
-    clearInterval(globalPollIntervalId);
-    console.log("⛔ Cleared previous poller");
+  // ✅ Clear any existing interval first
+  if (pollIntervalRef.current) {
+    clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = null;
+    console.log("⛔ Cleared existing polling interval");
   }
-
-  let pollCount = 0;
-  let pollInterval = 5000;
-  let maxPollCount = 30;
 
   try {
     setSending(true);
@@ -67,6 +65,10 @@ const handleBroadcastToAll = async () => {
     const userId = parseInt(localStorage.getItem("userId"));
     const latestBotCount = parseInt(localStorage.getItem("botCount") || "1", 10);
     const numberCount = parseInt(localStorage.getItem("importedNumberCount") || "0", 10);
+
+    let pollCount = 0;
+    let pollInterval = 5000;
+    let maxPollCount = 30;
 
     if (numberCount > 1000) {
       pollInterval = 4800;
@@ -78,8 +80,8 @@ const handleBroadcastToAll = async () => {
 
     console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
 
-    // ✅ Set global poller
-    globalPollIntervalId = setInterval(async () => {
+    // ✅ Start polling and save the interval ID in ref
+    pollIntervalRef.current = setInterval(async () => {
       try {
         const {
           data: { users, onlineUsers },
@@ -93,8 +95,8 @@ const handleBroadcastToAll = async () => {
 
       pollCount++;
       if (pollCount >= maxPollCount) {
-        clearInterval(globalPollIntervalId);
-        globalPollIntervalId = null;
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
         console.log("✅ Finished polling.");
       }
     }, pollInterval);
@@ -109,27 +111,29 @@ const handleBroadcastToAll = async () => {
 
     console.log("🚀 Sending with bot delays:", botDelays);
 
-    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
+    await axios.post("http://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
       botDelays,
     });
 
-    // ✅ Stop polling after broadcast
-    clearInterval(globalPollIntervalId);
-    globalPollIntervalId = null;
+    // ✅ Stop polling after successful broadcast
+    clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = null;
     console.log("🛑 Polling stopped after broadcast");
 
     toast.success("Broadcast sent successfully");
     setBroadcastMessage("");
     setIsBroadcastModalVisible(false);
+
   } catch (err) {
     console.error("Broadcast error:", err);
   } finally {
     setSending(false);
   }
 };
+
 
 
 
