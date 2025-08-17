@@ -305,6 +305,8 @@ await refetchContacts();
             >
               <option value="male">Male</option>
               <option value="female">Female</option>
+              
+              <option value="animals">animals</option>
             </select>
 
             <input
