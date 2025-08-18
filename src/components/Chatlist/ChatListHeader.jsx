@@ -22,7 +22,7 @@ export default function ChatListHeader() {
 
   const [isBroadcastModalVisible, setIsBroadcastModalVisible] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
-  const [botCount, setBotCount] = useState(8);
+
 
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [selectedGender, setSelectedGender] = useState("male");
@@ -101,21 +101,23 @@ const handleBroadcastToAll = async () => {
       }
     }, pollInterval);
 
-    const botStartId = 9;
-    const botDelays = Array.from({ length: latestBotCount }, (_, i) => {
-      const botId = botStartId + i;
-      const delayKey = `delay_${botId}`;
-      const delay = localStorage.getItem(delayKey);
-      return parseInt(delay || "0", 10);
-    });
+    // ✅ Gather *all* delays from localStorage
+    const delays = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith("delay_")) {
+        delays[key] = parseInt(localStorage.getItem(key), 10);
+      }
+    }
 
-    console.log("🚀 Sending with bot delays:", botDelays);
+    console.log("🚀 Sending with bot delays:", delays);
 
     await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
       message: broadcastMessage,
       senderId: userId,
       botCount: latestBotCount,
-      botDelays,
+    
+  botDelays: Object.values(delays)  // <-- converts {key: value} → [value, value...]
     });
 
     // ✅ Stop polling after successful broadcast

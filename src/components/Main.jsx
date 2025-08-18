@@ -86,8 +86,10 @@ export default function Main() {
           type: reducerCases.ADD_MESSAGE,
           newMessage: message,
         });
+console.log("🔍 Incoming data:", data);
 
-        const isCurrentChat = currentChatUser?.id === data.message.senderId;
+const isCurrentChat = currentChatUser?.id === data?.message?.senderId;
+
         if (!isCurrentChat) {
           console.log("🔔 Message from another user:", data.message.senderId);
         }
