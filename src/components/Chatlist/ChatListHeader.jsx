@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { faker } from "@faker-js/faker";
 import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
 import { useRef, useEffect } from "react";
 
@@ -101,24 +100,34 @@ const handleBroadcastToAll = async () => {
       }
     }, pollInterval);
 
-    // ✅ Gather *all* delays from localStorage
-    const delays = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith("delay_")) {
-        delays[key] = parseInt(localStorage.getItem(key), 10);
-      }
-    }
+// Gather all delays from localStorage in numeric order
+const delays = [];
+for (let i = 0; i < localStorage.length; i++) {
+  const key = localStorage.key(i);
+  if (key.startsWith("delay_")) {
+    delays.push({ key, value: parseInt(localStorage.getItem(key), 10) });
+  }
+}
 
-    console.log("🚀 Sending with bot delays:", delays);
+// Sort by numeric part of the key
+delays.sort((a, b) => {
+  const numA = parseInt(a.key.split("_")[1], 10);
+  const numB = parseInt(b.key.split("_")[1], 10);
+  return numA - numB;
+});
 
-    await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
-      message: broadcastMessage,
-      senderId: userId,
-      botCount: latestBotCount,
-    
-  botDelays: Object.values(delays)  // <-- converts {key: value} → [value, value...]
-    });
+const botDelaysOrdered = delays.map(d => d.value);
+
+console.log("🚀 Sending with ordered bot delays:", botDelaysOrdered);
+
+await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
+  message: broadcastMessage,
+  senderId: userId,
+  botCount: latestBotCount,
+  botDelays: botDelaysOrdered
+});
+
+
 
     // ✅ Stop polling after successful broadcast
     clearInterval(pollIntervalRef.current);

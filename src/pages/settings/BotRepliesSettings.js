@@ -72,15 +72,26 @@ export default function BotRepliesSettings() {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-reply/${id}`);
-      localStorage.removeItem(`delay_${id}`);
-      fetchReplies();
-    } catch {
-      setError("❌ Failed to delete reply.");
-    }
-  };
+const handleDelete = async (id) => {
+  try {
+    await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-reply/${id}`);
+
+    // Remove the delay for the deleted reply
+    localStorage.removeItem(`delay_${id}`);
+
+    // Optional: Remove all other delay entries if you want a full cleanup
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("delay_")) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    fetchReplies();
+  } catch {
+    setError("❌ Failed to delete reply.");
+  }
+};
+
 
   const handleEdit = async (id) => {
     try {
@@ -95,12 +106,11 @@ export default function BotRepliesSettings() {
   };
 
   // Handle delay change and sync with localStorage
-  const handleDelayChange = (id, seconds) => {
-    const updated = { ...delays, [id]: seconds };
-    setDelays(updated);
-    localStorage.setItem(`delay_${id}`, (seconds * 1000).toString()); // Convert sec to ms for storage
-  };
-
+const handleDelayChange = (id, seconds) => {
+  const updated = { ...delays, [id]: seconds };
+  setDelays(updated);
+  localStorage.setItem(`delay_${id}`, (seconds * 1000).toString()); // save in ms
+};
   const handleResetAllDelays = () => {
     const cleared = {};
     replies.forEach((r) => {
@@ -203,15 +213,17 @@ export default function BotRepliesSettings() {
                   >
                     <FiTrash2 />
                   </button>
-                  <input
-                    type="number"
-                    className="w-20 px-1 py-1 text-xs border rounded-md"
-                    placeholder="Delay (sec)"
-                    value={delays[r.id] || ""}
-                    onChange={(e) =>
-                      handleDelayChange(r.id, parseInt(e.target.value || "0", 10))
-                    }
-                  />
+                 
+
+<input
+  type="number"
+  className="w-20 px-1 py-1 text-xs border rounded-md"
+  placeholder="Delay (sec)"
+  value={delays[r.id] ?? 0}   // ✅ always pull by reply ID
+  onChange={(e) =>
+    handleDelayChange(r.id, parseInt(e.target.value || "0", 10))
+  }
+/>
                 </div>
               </>
             )}
