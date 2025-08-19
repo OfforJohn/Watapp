@@ -196,14 +196,18 @@ const handleResetAndKill = () => {
       </div>
 
       {/* Reset Button */}
- <div className="flex justify-end">
+<div className="flex justify-end">
   <button
     onClick={handleResetAndKill}
-    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 shadow-md"
+    className="flex items-center gap-2 px-5 py-2.5 
+               rounded-full bg-blue-500 text-white text-sm font-medium
+               hover:bg-blue-600 active:bg-blue-700
+               transition-all duration-200 shadow-md"
   >
-    ✕ Reset & Kill
+    🔄 Reset Replies
   </button>
 </div>
+
 
 
 

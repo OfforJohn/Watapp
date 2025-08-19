@@ -130,12 +130,13 @@ await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broa
   botDelays: botDelaysOrdered
 });
 
+// ✅ Stop polling after successful broadcast (with 4s delay)
+setTimeout(() => {
+  clearInterval(pollIntervalRef.current);
+  pollIntervalRef.current = null;
+  console.log("🛑 Polling stopped after broadcast (delayed 4s)");
+}, 4000); // 4000ms = 4 seconds
 
-
-    // ✅ Stop polling after successful broadcast
-    clearInterval(pollIntervalRef.current);
-    pollIntervalRef.current = null;
-    console.log("🛑 Polling stopped after broadcast");
 
     toast.success("Broadcast sent successfully");
     setBroadcastMessage("");
