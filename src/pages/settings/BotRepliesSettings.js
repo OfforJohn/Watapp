@@ -111,6 +111,8 @@ const handleDelayChange = (id, seconds) => {
   setDelays(updated);
   localStorage.setItem(`delay_${id}`, (seconds * 1000).toString()); // save in ms
 };
+
+
   const handleResetAllDelays = () => {
     const cleared = {};
     replies.forEach((r) => {
@@ -119,10 +121,42 @@ const handleDelayChange = (id, seconds) => {
     });
     setDelays(cleared);
   };
+  
 
   useEffect(() => {
     fetchReplies();
   }, []);
+
+  const handleKillDelayStorage = () => {
+  try {
+    // remove every delay_* key in localStorage
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("delay_")) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // reflect in UI: set all current delays to 0
+    setDelays((prev) => {
+      const cleared = {};
+      Object.keys(prev).forEach((id) => (cleared[id] = 0));
+      return cleared;
+    });
+
+    setMessage("🗑️ Cleared allkeys from localStorage");
+    setTimeout(() => setMessage(""), 2000);
+  } catch {
+    setError("❌ Could not clear delay_* keys");
+    setTimeout(() => setError(""), 2000);
+  }
+};
+
+const handleResetAndKill = () => {
+  handleResetAllDelays();   // clears the state delays
+  handleKillDelayStorage(); // removes from localStorage
+};
+
+
 
   return (
     <div className="bg-white shadow-sm rounded-lg p-6 mt-6 space-y-6">
@@ -162,11 +196,16 @@ const handleDelayChange = (id, seconds) => {
       </div>
 
       {/* Reset Button */}
-      <div className="flex justify-end">
-        <button onClick={handleResetAllDelays} className="text-sm text-blue-500">
-          Reset All Delays
-        </button>
-      </div>
+ <div className="flex justify-end">
+  <button
+    onClick={handleResetAndKill}
+    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 text-white text-sm hover:bg-red-700 shadow-md"
+  >
+    ✕ Reset & Kill
+  </button>
+</div>
+
+
 
       {message && <p className="text-green-600">{message}</p>}
       {error && <p className="text-red-600">{error}</p>}

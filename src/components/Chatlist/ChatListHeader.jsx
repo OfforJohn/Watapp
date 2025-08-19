@@ -80,25 +80,28 @@ const handleBroadcastToAll = async () => {
     console.log(`Polling set for ${maxPollCount} times with ${pollInterval}ms interval`);
 
     // ✅ Start polling and save the interval ID in ref
-    pollIntervalRef.current = setInterval(async () => {
-      try {
-        const {
-          data: { users, onlineUsers },
-        } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userId}`);
-        dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
-        dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
-        console.log(`📡 Polling #${pollCount + 1}...`);
-      } catch (err) {
-        console.error("Polling error:", err);
-      }
+ pollIntervalRef.current = setInterval(async () => {
+  try {
+    const {
+      data: { users, onlineUsers },
+    } = await axios.get(`${GET_INITIAL_CONTACTS_ROUTE}/${userId}`);
+    dispatch({ type: reducerCases.SET_USER_CONTACTS, userContacts: users });
+    dispatch({ type: reducerCases.SET_ONLINE_USERS, onlineUsers });
+    console.log(`📡 Polling #${pollCount + 1}...`);
+  } catch (err) {
+    console.error("Polling error:", err);
+  }
 
-      pollCount++;
-      if (pollCount >= maxPollCount) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-        console.log("✅ Finished polling.");
-      }
-    }, pollInterval);
+  pollCount++;
+
+  // ✅ Give 4 extra polls before stopping
+  if (pollCount >= maxPollCount + 4) {
+    clearInterval(pollIntervalRef.current);
+    pollIntervalRef.current = null;
+    console.log("✅ Finished polling (including 4 grace polls).");
+  }
+}, pollInterval);
+
 
 // Gather all delays from localStorage in numeric order
 const delays = [];
