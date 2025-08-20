@@ -71,7 +71,7 @@ const handleBroadcastToAll = async () => {
 
  if (numberCount > 2500) {
   pollInterval = 4800;
-  maxPollCount = 350;
+  maxPollCount = 450;
 } else if (numberCount > 1000) {
   pollInterval = 4800;
   maxPollCount = 240;
