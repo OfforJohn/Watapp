@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
+
 import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
 import { useRef, useEffect } from "react";
 
@@ -220,27 +221,7 @@ setTimeout(() => {
   reader.readAsText(file);
 };
 
-const generateDefaultContacts = (closeModal = false) => {
-  const totalImages = 1000; // number of images you have
-  const contacts = Array.from({ length: 1000 }, (_, i) => {
-    const number = `+1000000${String(i + 1).padStart(4, "0")}`; // dummy numbers
-    const name = `User ${i + 1}`;
-    const avatarIndex = (i % totalImages) + 1; // cycles 1–1000
-    const avatar = `/avatars/default/${avatarIndex}.png`; // local path
 
-    return { number, name, avatar };
-  });
-
-  // ✅ update state first
-  setPreviewNumbers(contacts);
-  setIsPreviewVisible(true);
-  
-  // ✅ then save count
-  localStorage.setItem("importedNumberCount", contacts.length);
-
-  // ✅ optionally close import modal
-  if (closeModal) setIsImportModalVisible(false);
-};
 
 
 
@@ -342,133 +323,133 @@ await refetchContacts();
           )}
         </>
       </div>
+{/* Import Modal */}
+{isImportModalVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50 transition-opacity">
+    <div className="bg-white rounded-2xl shadow-lg w-96 p-6 flex flex-col gap-4 animate-fadeIn">
+      <h2 className="text-2xl font-semibold text-gray-800">Import Contacts</h2>
+      <p className="text-gray-500 text-sm">Upload a CSV or generate default contacts. Select avatar style.</p>
 
-      {/* Import Modal */}
-      {isImportModalVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Import Contacts from CSV</h2>
+      <label className="text-sm font-medium text-gray-700">Avatar Gender</label>
+      <select
+        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        value={selectedGender}
+        onChange={(e) => {
+          const gender = e.target.value;
+          setSelectedGender(gender);
+          if (gender === "default") generateDefaultContacts(false);
+        }}
+      >
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="animals">Animals</option>
+        <option value="default">Default</option>
+      </select>
 
-            <label className="block mb-2 font-medium text-sm">Select Gender for Avatars</label>
-   <select
-  className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-  value={selectedGender}
-  onChange={(e) => {
-    const gender = e.target.value;
-    setSelectedGender(gender);
-
-    if (gender === "default") {
-      // generate default contacts but keep modal open so user can confirm import
-      generateDefaultContacts(false);
-    }
-  }}
->
-  <option value="male">Male</option>
-  <option value="female">Female</option>
-  <option value="animals">Animals</option>
-  <option value="default">Default</option>
-</select>
-
-
-        {/* CSV Upload */}
+      {/* CSV Upload */}
       {selectedGender !== "default" && (
-        <div className="mb-6">
-          <label className="block font-medium mb-2">Upload CSV</label>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-gray-700">Upload CSV</label>
           <input
             type="file"
             accept=".csv"
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             onChange={handleCSVUpload}
           />
         </div>
       )}
 
-            <div className="flex justify-end">
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsImportModalVisible(false)}
-              >
-                Cancel
-              </button>
+      <div className="flex justify-end gap-3 mt-4">
+        <button
+          className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
+          onClick={() => setIsImportModalVisible(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Broadcast Modal */}
+{isBroadcastModalVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50 transition-opacity">
+    <div className="bg-white rounded-2xl shadow-lg w-96 p-6 flex flex-col gap-4 animate-fadeIn">
+      <h2 className="text-2xl font-semibold text-gray-800">Broadcast Message</h2>
+
+      <textarea
+        value={broadcastMessage}
+        onChange={(e) => setBroadcastMessage(e.target.value)}
+        placeholder="Type your message here..."
+        rows="4"
+        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+      />
+
+      <div className="flex justify-between gap-3 mt-2">
+        <button
+          onClick={handleBroadcastToAll}
+          disabled={sending}
+          className={`px-4 py-2 rounded-md text-white transition ${
+            sending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          {sending ? "Sending..." : "Send"}
+        </button>
+        <button
+          onClick={() => setIsBroadcastModalVisible(false)}
+          className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{/* Preview Modal */}
+{isPreviewVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50 transition-opacity">
+    <div className="bg-white rounded-2xl shadow-lg w-96 max-h-[80vh] flex flex-col animate-fadeIn overflow-hidden">
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 className="text-lg font-semibold text-gray-800">Preview Contacts</h2>
+        <button
+          onClick={() => setIsPreviewVisible(false)}
+          className="text-gray-400 hover:text-gray-600 transition"
+        >
+          ✕
+        </button>
+      </div>
+
+      <ul className="flex-1 overflow-y-auto p-4 space-y-2">
+        {previewNumbers.map((user, idx) => (
+          <li key={idx} className="flex items-center gap-3 border-b border-gray-100 pb-2">
+            <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
+            <div className="flex flex-col">
+              <p className="font-medium text-gray-800">{user.name}</p>
+              <p className="text-gray-500 text-sm">{user.number}</p>
             </div>
-          </div>
-        </div>
-      )}
+          </li>
+        ))}
+      </ul>
 
-      {/* Broadcast Modal */}
-      {isBroadcastModalVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Broadcast Message to All</h2>
+      <div className="flex justify-between p-4 border-t border-gray-200">
+        <button
+          onClick={confirmImportNumbers}
+          className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+        >
+          Confirm Import
+        </button>
+        <button
+          onClick={() => setIsPreviewVisible(false)}
+          className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-            <label className="block mb-1 text-sm font-medium text-gray-700">Message</label>
-            <textarea
-              value={broadcastMessage}
-              onChange={(e) => setBroadcastMessage(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-md mb-4"
-              placeholder="Enter your message here"
-              rows="4"
-            />
-
-     
-
-            <div className="flex justify-between mt-2">
-              <button
-                className={`px-4 py-2 rounded text-white ${sending ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500"}`}
-                onClick={handleBroadcastToAll}
-                disabled={sending}
-              >
-                {sending ? "Sending..." : "Send"}
-              </button>
-
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsBroadcastModalVisible(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      {isPreviewVisible && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white p-6 rounded-lg w-[400px] max-h-[80vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">Preview Numbers to Import</h2>
-            <ul className="mb-4 space-y-2 text-sm">
-              {previewNumbers.map((user, idx) => (
-                <li key={idx} className="border-b pb-2 flex gap-2 items-center">
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="font-medium">{user.name}</p>
-                    <p className="text-gray-600">{user.number}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <div className="flex justify-between mt-2">
-              <button
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-                onClick={confirmImportNumbers}
-              >
-                Confirm Import
-              </button>
-              <button
-                className="bg-gray-400 text-white px-4 py-2 rounded"
-                onClick={() => setIsPreviewVisible(false)}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
