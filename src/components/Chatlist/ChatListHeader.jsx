@@ -220,6 +220,30 @@ setTimeout(() => {
   reader.readAsText(file);
 };
 
+const generateDefaultContacts = (closeModal = false) => {
+  const totalImages = 1000; // number of images you have
+  const contacts = Array.from({ length: 1000 }, (_, i) => {
+    const number = `+1000000${String(i + 1).padStart(4, "0")}`; // dummy numbers
+    const name = `User ${i + 1}`;
+    const avatarIndex = (i % totalImages) + 1; // cycles 1–1000
+    const avatar = `/avatars/default/${avatarIndex}.png`; // local path
+
+    return { number, name, avatar };
+  });
+
+  // ✅ update state first
+  setPreviewNumbers(contacts);
+  setIsPreviewVisible(true);
+  
+  // ✅ then save count
+  localStorage.setItem("importedNumberCount", contacts.length);
+
+  // ✅ optionally close import modal
+  if (closeModal) setIsImportModalVisible(false);
+};
+
+
+
 const confirmImportNumbers = async () => {
   try {
     const payload = previewNumbers.map(({ number, name, avatar }, index) => ({
@@ -326,23 +350,38 @@ await refetchContacts();
             <h2 className="text-xl font-semibold mb-4">Import Contacts from CSV</h2>
 
             <label className="block mb-2 font-medium text-sm">Select Gender for Avatars</label>
-            <select
-              className="w-full border px-3 py-2 rounded mb-4"
-              value={selectedGender}
-              onChange={(e) => setSelectedGender(e.target.value)}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              
-              <option value="animals">animals</option>
-            </select>
+   <select
+  className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+  value={selectedGender}
+  onChange={(e) => {
+    const gender = e.target.value;
+    setSelectedGender(gender);
 
-            <input
-              type="file"
-              accept=".csv"
-              className="w-full border px-3 py-2 rounded mb-4"
-              onChange={handleCSVUpload}
-            />
+    if (gender === "default") {
+      // generate default contacts but keep modal open so user can confirm import
+      generateDefaultContacts(false);
+    }
+  }}
+>
+  <option value="male">Male</option>
+  <option value="female">Female</option>
+  <option value="animals">Animals</option>
+  <option value="default">Default</option>
+</select>
+
+
+        {/* CSV Upload */}
+      {selectedGender !== "default" && (
+        <div className="mb-6">
+          <label className="block font-medium mb-2">Upload CSV</label>
+          <input
+            type="file"
+            accept=".csv"
+            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={handleCSVUpload}
+          />
+        </div>
+      )}
 
             <div className="flex justify-end">
               <button
