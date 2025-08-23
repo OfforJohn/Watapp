@@ -185,59 +185,43 @@ const generateDefaultContacts = () => {
     setIsImportModalVisible(true);
   };
 
-const handleCSVUpload = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const handleCSVUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const text = e.target.result;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
 
-    const contacts = text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line) // remove empty lines
-      .map((line) => {
-        let name, number;
-
-        if (line.includes(",")) {
-          // Case: CSV row looks like "Name,PhoneNumber"
-          const parts = line.split(",");
-          name = parts[0].trim();
-          number = parts[1]?.trim();
-        } else {
-          // Case: CSV row has only a phone number
-          number = line;
-          name = number; // fallback: use number as name
-        }
-
-        // Validate number (must be at least 10 digits, optional +)
-        if (!/^\+?\d{10,}$/.test(number)) return null;
-
-        // Assign random avatar
-        const randomIndex = Math.floor(Math.random() * 1000) + 1;
-        const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
-
-        return { number, name, avatar };
-      })
-      .filter(Boolean); // remove invalid rows
+      const contacts = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line && /^\+?\d{10,}$/.test(line))
+      .map((number) => {
+        
+        const fullName = number; // ✅ Use number as the name
+  const randomIndex = Math.floor(Math.random() * 1000) + 1;
+  const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
+  return { number, name: fullName, avatar }; // ✅ name is a string
+});
 
     const numberCount = contacts.length;
     console.log("Total valid numbers:", numberCount);
 
-    localStorage.setItem("importedNumberCount", numberCount);
+    // Save the numberCount to localStorage
+    localStorage.setItem('importedNumberCount', numberCount);
 
-    if (!contacts.length) {
-      toast.error("No valid phone numbers found.");
-      return;
-    }
+      if (!contacts.length) {
+        toast.error("No valid phone numbers found.");
+        return;
+      }
 
-    setPreviewNumbers(contacts);
-    setIsPreviewVisible(true);
+      setPreviewNumbers(contacts);
+      setIsPreviewVisible(true);
+    };
+
+    reader.readAsText(file);
   };
-
-  reader.readAsText(file);
-};
 
 
 
