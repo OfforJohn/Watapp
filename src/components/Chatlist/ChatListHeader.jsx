@@ -166,43 +166,59 @@ setTimeout(() => {
     setIsImportModalVisible(true);
   };
 
-  const handleCSVUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+ const handleCSVUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target.result;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const text = e.target.result;
 
-      const contacts = text
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line && /^\+?\d{10,}$/.test(line))
-      .map((number) => {
-        
-        const fullName = number; // ✅ Use number as the name
-  const randomIndex = Math.floor(Math.random() * 1000) + 1;
-  const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
-  return { number, name: fullName, avatar }; // ✅ name is a string
-});
+    const contacts = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line) // remove empty lines
+      .map((line) => {
+        let name, number;
+
+        // Detect delimiter: comma or semicolon
+        const delimiter = line.includes(",") ? "," : line.includes(";") ? ";" : null;
+
+        if (delimiter) {
+          const parts = line.split(delimiter).map((item) => item.trim());
+          name = parts[0];
+          number = parts[1];
+        } else {
+          // Only number, no name provided
+          number = line;
+          name = number;
+        }
+
+        // Validate number
+        if (!/^\+?\d{10,}$/.test(number)) return null;
+
+        const randomIndex = Math.floor(Math.random() * 1000) + 1;
+        const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
+
+        return { number, name, avatar };
+      })
+      .filter(Boolean); // remove invalid entries
 
     const numberCount = contacts.length;
-    console.log("Total valid numbers:", numberCount);
+    console.log("Total valid contacts:", numberCount);
+    localStorage.setItem("importedNumberCount", numberCount);
 
-    // Save the numberCount to localStorage
-    localStorage.setItem('importedNumberCount', numberCount);
+    if (!contacts.length) {
+      toast.error("No valid contacts found.");
+      return;
+    }
 
-      if (!contacts.length) {
-        toast.error("No valid phone numbers found.");
-        return;
-      }
-
-      setPreviewNumbers(contacts);
-      setIsPreviewVisible(true);
-    };
-
-    reader.readAsText(file);
+    setPreviewNumbers(contacts);
+    setIsPreviewVisible(true);
   };
+
+  reader.readAsText(file);
+};
 
 const confirmImportNumbers = async () => {
   try {
