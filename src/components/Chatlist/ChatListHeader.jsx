@@ -221,7 +221,27 @@ setTimeout(() => {
   reader.readAsText(file);
 };
 
+const generateDefaultContacts = (closeModal = false) => {
+  const totalImages = 1000; // number of images you have
+  const contacts = Array.from({ length: 1000 }, (_, i) => {
+    const number = `+1000000${String(i + 1).padStart(4, "0")}`; // dummy numbers
+    const name = `User ${i + 1}`;
+    const avatarIndex = (i % totalImages) + 1; // cycles 1–1000
+    const avatar = `/avatars/default/${avatarIndex}.png`; // local path
 
+    return { number, name, avatar };
+  });
+
+  // ✅ update state first
+  setPreviewNumbers(contacts);
+  setIsPreviewVisible(true);
+  
+  // ✅ then save count
+  localStorage.setItem("importedNumberCount", contacts.length);
+
+  // ✅ optionally close import modal
+  if (closeModal) setIsImportModalVisible(false);
+};
 
 
 
