@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FixedSizeList as List } from "react-window";
 import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
 import { useRef, useEffect } from "react";
 
@@ -156,24 +155,6 @@ setTimeout(() => {
 
 
 
-const generateDefaultContacts = () => {
-  const totalImages = 1000; // number of images you have
-  const contacts = Array.from({ length: 1000 }, (_, i) => {
-    const number = `+1000000${String(i + 1).padStart(4, "0")}`; // dummy numbers
-    const name = `User ${i + 1}`;
-    const avatarIndex = (i % totalImages) + 1; // cycles 1–1000
-    const avatar = `/avatars/default/${avatarIndex}.png`; // local path
-
-    return { number, name, avatar };
-  });
-
-  localStorage.setItem("importedNumberCount", contacts.length);
-  setPreviewNumbers(contacts);
-  setIsPreviewVisible(true);
-};
-
-
-
   const showContextMenu = (e) => {
     e.preventDefault();
     setContextMenuCordinates({ x: e.pageX, y: e.pageY });
@@ -222,8 +203,6 @@ const generateDefaultContacts = () => {
 
     reader.readAsText(file);
   };
-
-
 
 const confirmImportNumbers = async () => {
   try {
@@ -325,60 +304,41 @@ await refetchContacts();
       </div>
 
       {/* Import Modal */}
-   {isImportModalVisible && (
-  <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center">Import Contacts</h2>
+      {isImportModalVisible && (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-semibold mb-4">Import Contacts from CSV</h2>
 
-      {/* Avatar Type Selector */}
-      <div className="mb-4">
-        <label className="block font-medium mb-2">Select Avatar Type</label>
-        <select
-          className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={selectedGender}
-          onChange={(e) => {
-            const gender = e.target.value;
-            setSelectedGender(gender);
+            <label className="block mb-2 font-medium text-sm">Select Gender for Avatars</label>
+            <select
+              className="w-full border px-3 py-2 rounded mb-4"
+              value={selectedGender}
+              onChange={(e) => setSelectedGender(e.target.value)}
+            >
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              
+              <option value="animals">animals</option>
+            </select>
 
-            if (gender === "default") {
-              generateDefaultContacts(); // generate 1000 default users
-              setIsImportModalVisible(false); // close modal immediately
-            }
-          }}
-        >
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="animals">Animals</option>
-          <option value="default">Default</option>
-        </select>
-      </div>
+            <input
+              type="file"
+              accept=".csv"
+              className="w-full border px-3 py-2 rounded mb-4"
+              onChange={handleCSVUpload}
+            />
 
-      {/* CSV Upload */}
-      {selectedGender !== "default" && (
-        <div className="mb-6">
-          <label className="block font-medium mb-2">Upload CSV</label>
-          <input
-            type="file"
-            accept=".csv"
-            className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={handleCSVUpload}
-          />
+            <div className="flex justify-end">
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+                onClick={() => setIsImportModalVisible(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
-
-      {/* Buttons */}
-      <div className="flex justify-end gap-3">
-        <button
-          className="px-4 py-2 rounded bg-gray-300 text-gray-800 hover:bg-gray-400 transition"
-          onClick={() => setIsImportModalVisible(false)}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
 
       {/* Broadcast Modal */}
       {isBroadcastModalVisible && (
@@ -418,57 +378,42 @@ await refetchContacts();
       )}
 
       {/* Preview Modal */}
-
-{isPreviewVisible && (
-  <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded-lg w-[500px] h-[80vh]">
-      <h2 className="text-lg font-semibold mb-4">Preview Numbers to Import</h2>
-
-      <List
-        height={500} // visible height
-        itemCount={previewNumbers.length}
-        itemSize={60} // height per row
-        width={"100%"}
-      >
-        {({ index, style }) => {
-          const user = previewNumbers[index];
-          return (
-            <div
-              style={style}
-              className="flex gap-2 items-center border-b px-2 py-1"
-            >
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <p className="font-medium">{user.name}</p>
-                <p className="text-gray-600 text-sm">{user.number}</p>
-              </div>
+      {isPreviewVisible && (
+        <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-40 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg w-[400px] max-h-[80vh] overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-4">Preview Numbers to Import</h2>
+            <ul className="mb-4 space-y-2 text-sm">
+              {previewNumbers.map((user, idx) => (
+                <li key={idx} className="border-b pb-2 flex gap-2 items-center">
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-medium">{user.name}</p>
+                    <p className="text-gray-600">{user.number}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between mt-2">
+              <button
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+                onClick={confirmImportNumbers}
+              >
+                Confirm Import
+              </button>
+              <button
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+                onClick={() => setIsPreviewVisible(false)}
+              >
+                Cancel
+              </button>
             </div>
-          );
-        }}
-      </List>
-
-      <div className="flex justify-between mt-4">
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={confirmImportNumbers}
-        >
-          Confirm Import
-        </button>
-        <button
-          className="bg-gray-400 text-white px-4 py-2 rounded"
-          onClick={() => setIsPreviewVisible(false)}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+          </div>
+        </div>
+      )}
     </div>
   );
 }
