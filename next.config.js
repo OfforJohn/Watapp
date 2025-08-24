@@ -6,7 +6,7 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["first-wave-card.glitch.me"],
+    domains: ["render-backend-ksnp.onrender.com"],
   },
 };
 
