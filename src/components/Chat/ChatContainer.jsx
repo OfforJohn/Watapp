@@ -45,7 +45,7 @@ export default function ChatContainer() {
         dispatch({ type: "REMOVE_MESSAGE", payload: messageId });
 
         const response = await axios.get(
-          `https://render-backend-ksnp.onrender.comapi/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
+          `https://render-backend-ksnp.onrender.com/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
         );
 
         dispatch({
