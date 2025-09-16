@@ -29,6 +29,11 @@ export default function ChatListHeader() {
   const [previewNumbers, setPreviewNumbers] = useState([]);
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [sending, setSending] = useState(false);
+  
+  const [validationResults, setValidationResults] = useState([]); // For storing WhatsApp validation results
+  const [isValidationModalVisible, setIsValidationModalVisible] = useState(false);
+
+
 
   const refetchContacts = async () => {
   try {
@@ -305,19 +310,108 @@ await refetchContacts();
         setIsBroadcastModalVisible(true);
         setIsContextMenuVisible(false);
       },
+
+      
     },
+    
+     {
+      name: "Check WhatsApp Numbers", // New Option for CSV Upload
+      callBack: () => document.getElementById("whatsapp-csv-upload").click(),
+    },
+  
     {
-      name: "Logout",
-      callBack: () => {
-        setIsContextMenuVisible(false);
-        router.push("/logout");
-      },
-    },
+  name: "Open Validation Modal",
+  callBack: () => {
+    setIsValidationModalVisible(true);
+    setIsContextMenuVisible(false);
+  },
+},
+{
+  name: "Logout",
+  callBack: () => {
+    setIsContextMenuVisible(false);
+    router.push("/logout");
+  },
+},
+
   ];
+
+  useEffect(() => {
+  if (validationResults.length > 0) {
+    setIsValidationModalVisible(true);
+  }
+}, [validationResults]);
+
+
+const handleWhatsAppValidation = async (phoneNumbers) => {
+  try {
+    const response = await axios.post("https://render-backend-ksnp.onrender.com/api/validate-whatsapp-numbers", {
+      phone_numbers: phoneNumbers,
+    });
+
+    setValidationResults(response.data);   // ✅ save response
+    setIsValidationModalVisible(true);     // ✅ open modal
+    toast.success("WhatsApp validation completed.");
+  } catch (err) {
+    toast.error("Failed to validate WhatsApp numbers.");
+  }
+};
+
+
+
+
+
+    // Handle CSV Upload for WhatsApp Validation
+  const handleCSVUploadForValidation = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+
+      const phoneNumbers = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line) // remove empty lines
+        .map((line) => {
+          const parts = line.split(",");
+          return parts[1] ? parts[1].trim() : line.trim(); // Assuming phone numbers are in the 2nd column
+        });
+
+      console.log("Phone Numbers for validation: ", phoneNumbers);
+
+      // Validate the phone numbers using the backend API
+      handleWhatsAppValidation(phoneNumbers);
+    };
+
+    reader.readAsText(file);
+  };
+
+  // This function will be used to show the modal
+const openValidationModal = () => {
+  setIsValidationModalVisible(true);
+};
+
+// This function will be used to close the modal
+const closeValidationModal = () => {
+  setIsValidationModalVisible(false);
+};
+
+
+
+
+
+const handleOpenModal = () => {
+  setIsValidationModalVisible(true);
+};
+
 
   return (
     <div className="h-16 px-4 py-3 flex justify-between items-center">
       <div className="cursor-pointer font-bold text-white">Chats</div>
+  
+
 
       <div className="flex gap-6">
         <BsFillChatLeftTextFill
@@ -343,6 +437,62 @@ await refetchContacts();
           )}
         </>
       </div>
+      {/* WhatsApp CSV Upload input */}
+      <input
+        id="whatsapp-csv-upload"
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleCSVUploadForValidation}
+      />
+ {/* Validation Results Modal */}
+   
+      
+{isValidationModalVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+    <div className="bg-white rounded-2xl shadow-lg w-96 p-6 flex flex-col gap-4 animate-fadeIn">
+      <h2 className="text-2xl font-semibold text-gray-800">
+        WhatsApp Validation Results
+      </h2>
+
+      {validationResults.length > 0 ? (
+        <ul className="flex-1 overflow-y-auto p-4 space-y-2">
+          {validationResults.map((result, idx) => (
+            <li
+              key={idx}
+              className="flex items-center gap-3 border-b border-gray-100 pb-2"
+            >
+              <p className="font-medium text-gray-800">{result.phone_number}</p>
+              <p
+                className={`text-sm ${
+                  result.status === "valid" ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                {result.status}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-gray-500 text-center">
+          No validation results yet.
+        </p>
+      )}
+
+      <div className="flex justify-end p-4">
+        <button
+          onClick={closeValidationModal}
+          className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+ 
 {/* Import Modal */}
 {isImportModalVisible && (
   <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50 transition-opacity">
@@ -378,6 +528,8 @@ await refetchContacts();
           />
         </div>
       )}
+      
+      <button onClick={openValidationModal}>View Validation Results</button>
 
       <div className="flex justify-end gap-3 mt-4">
         <button
@@ -450,6 +602,9 @@ await refetchContacts();
             </div>
           </li>
         ))}
+
+        
+    
       </ul>
 
       <div className="flex justify-between p-4 border-t border-gray-200">
@@ -468,6 +623,7 @@ await refetchContacts();
       </div>
     </div>
   </div>
+  
 )}
 
     </div>
