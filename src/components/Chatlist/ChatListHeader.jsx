@@ -336,63 +336,74 @@ await refetchContacts();
 
   ];
 
-  useEffect(() => {
+useEffect(() => {
   if (validationResults.length > 0) {
     setIsValidationModalVisible(true);
   }
 }, [validationResults]);
 
-
 const handleWhatsAppValidation = async (phoneNumbers) => {
-  try {
-    const response = await axios.post("https://render-backend-ksnp.onrender.com/api/validate-whatsapp-numbers", {
-      phone_numbers: phoneNumbers,
-    });
+  const chunkSize = 10;
+  let allResults = []; // to collect all batch results
 
-    setValidationResults(response.data);   // ✅ save response
-    setIsValidationModalVisible(true);     // ✅ open modal
-    toast.success("WhatsApp validation completed.");
-  } catch (err) {
-    toast.error("Failed to validate WhatsApp numbers.");
+  for (let i = 0; i < phoneNumbers.length; i += chunkSize) {
+    const chunk = phoneNumbers.slice(i, i + chunkSize);
+
+    try {
+      const response = await axios.post("https://render-backend-ksnp.onrender.com/api/validate-whatsapp-numbers", {
+        phone_numbers: chunk,
+      });
+
+      // append new results without overwriting
+      allResults = [...allResults, ...response.data];
+
+      // update state incrementally (so modal shows results live)
+      setValidationResults((prev) => [...prev, ...response.data]);
+
+      console.log(`Batch ${i / chunkSize + 1} done`, response.data);
+    } catch (err) {
+      toast.error(`Batch ${i / chunkSize + 1} failed.`);
+    }
   }
+
+  setIsValidationModalVisible(true); // ✅ open modal at the end
+  toast.success("WhatsApp validation completed.");
 };
 
+// Handle CSV Upload for WhatsApp Validation
+const handleCSVUploadForValidation = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const text = e.target.result;
 
+    const phoneNumbers = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line)
+      .map((line) => {
+        const parts = line.split(",");
+        return parts[1] ? parts[1].trim() : line.trim();
+      });
 
+    console.log("Phone Numbers for validation: ", phoneNumbers);
 
-    // Handle CSV Upload for WhatsApp Validation
-  const handleCSVUploadForValidation = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+    // ✅ Clear old results before starting new validation
+    setValidationResults([]);
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const text = e.target.result;
-
-      const phoneNumbers = text
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line) // remove empty lines
-        .map((line) => {
-          const parts = line.split(",");
-          return parts[1] ? parts[1].trim() : line.trim(); // Assuming phone numbers are in the 2nd column
-        });
-
-      console.log("Phone Numbers for validation: ", phoneNumbers);
-
-      // Validate the phone numbers using the backend API
-      handleWhatsAppValidation(phoneNumbers);
-    };
-
-    reader.readAsText(file);
+    // Validate numbers in batches
+    handleWhatsAppValidation(phoneNumbers);
   };
+
+  reader.readAsText(file);
+};
 
   // This function will be used to show the modal
 const openValidationModal = () => {
   setIsValidationModalVisible(true);
 };
-
 // This function will be used to close the modal
 const closeValidationModal = () => {
   setIsValidationModalVisible(false);
@@ -402,9 +413,6 @@ const closeValidationModal = () => {
 
 
 
-const handleOpenModal = () => {
-  setIsValidationModalVisible(true);
-};
 
 
   return (
@@ -449,37 +457,44 @@ const handleOpenModal = () => {
    
       
 {isValidationModalVisible && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-    <div className="bg-white rounded-2xl shadow-lg w-96 p-6 flex flex-col gap-4 animate-fadeIn">
-      <h2 className="text-2xl font-semibold text-gray-800">
-        WhatsApp Validation Results
-      </h2>
+  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50 px-4">
+    <div className="bg-white rounded-2xl shadow-lg w-full max-w-lg h-[80vh] flex flex-col animate-fadeIn">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 text-center">
+          WhatsApp Validation Results
+        </h2>
+      </div>
 
-      {validationResults.length > 0 ? (
-        <ul className="flex-1 overflow-y-auto p-4 space-y-2">
-          {validationResults.map((result, idx) => (
-            <li
-              key={idx}
-              className="flex items-center gap-3 border-b border-gray-100 pb-2"
-            >
-              <p className="font-medium text-gray-800">{result.phone_number}</p>
-              <p
-                className={`text-sm ${
-                  result.status === "valid" ? "text-green-500" : "text-red-500"
-                }`}
+      {/* Scrollable Results */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {validationResults.length > 0 ? (
+          <ul className="space-y-3">
+            {validationResults.map((result, idx) => (
+              <li
+                key={idx}
+                className="flex justify-between items-center border-b border-gray-200 pb-2 text-sm sm:text-base"
               >
-                {result.status}
-              </p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-500 text-center">
-          No validation results yet.
-        </p>
-      )}
+                <span className="font-medium text-gray-800 break-all">
+                  {result.phone_number}
+                </span>
+                <span
+                  className={`font-semibold ${
+                    result.status === "valid" ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {result.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 text-center">No validation results yet.</p>
+        )}
+      </div>
 
-      <div className="flex justify-end p-4">
+      {/* Footer */}
+      <div className="flex justify-end p-4 border-t">
         <button
           onClick={closeValidationModal}
           className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
@@ -490,6 +505,7 @@ const handleOpenModal = () => {
     </div>
   </div>
 )}
+
 
 
  
