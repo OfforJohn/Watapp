@@ -3,6 +3,7 @@ import { BsFillChatLeftTextFill, BsThreeDotsVertical } from "react-icons/bs";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { useRouter } from "next/router";
+import * as faceapi from 'face-api.js';
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -11,10 +12,12 @@ import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
 import { useRef, useEffect } from "react";
 
 
+
 import "react-toastify/dist/ReactToastify.css";
 
 export default function ChatListHeader() {
   const [{ userInfo }, dispatch] = useStateProvider();
+  const [genderResults, setGenderResults] = useState([]);
   const router = useRouter();
 
   const [contextMenuCordinates, setContextMenuCordinates] = useState({ x: 0, y: 0 });
@@ -370,42 +373,102 @@ export default function ChatListHeader() {
     if (allResults.length > 0) setIsValidationModalVisible(true);
     toast.success("WhatsApp validation completed with profiles.");
   };
+useEffect(() => {
+  const runGenderDetection = async () => {
+    if (!validationResults.length) return;
+
+    try {
+      await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+      await faceapi.nets.ageGenderNet.loadFromUri("/models");
+      console.log("face-api models loaded");
+    } catch (err) {
+      console.error("Error loading face-api models:", err);
+      return;
+    }
+
+    for (const result of validationResults) {
+      const imageUrl =
+        result?.profileRaw?.data?.head_image ||
+        result?.avatar ||
+        null;
+
+      if (!imageUrl) continue;
+
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = imageUrl;
+
+      img.onload = async () => {
+        try {
+          const detection = await faceapi
+            .detectSingleFace(img)
+            .withAgeAndGender();
+
+          if (detection) {
+            const { gender, age } = detection;
+
+            setGenderResults((prev) => [
+              ...prev,
+              {
+                phone_number: result.phone_number,
+                gender,
+                age: Math.round(age),
+              },
+            ]);
+          } else {
+            console.warn(`No face detected for ${result.phone_number}`);
+          }
+        } catch (err) {
+          console.error(`Detection failed for ${result.phone_number}:`, err);
+        }
+      };
+
+      img.onerror = (err) => {
+        console.error(`Image failed to load for ${result.phone_number}:`, err);
+      };
+    }
+  };
+
+  runGenderDetection();
+}, [validationResults]);
+
+
+
 
 
 
   // Handle CSV Upload for WhatsApp Validation
-  const handleCSVUploadForValidation = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+ const handleCSVUploadForValidation = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const text = e.target.result;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const text = e.target.result;
 
-      const phoneNumbers = text
-        .split("\n")
-        .map((line) => line.trim())
-        .filter((line) => line)
-        .map((line) => {
-          const parts = line.split(",");
-          const raw = parts[1] ? parts[1].trim() : line.trim();
+    const phoneNumbers = text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line)
+      .map((line) => {
+        const parts = line.split(",");
+        const raw = parts[1] ? parts[1].trim() : line.trim();
+        return raw.replace(/\D/g, ""); // normalize
+      })
+      .filter((num) => num.length > 6);
 
-          // Normalize: remove +, spaces, any non-digit characters
-          return raw.replace(/\D/g, "");
-        })
-        .filter((num) => num.length > 6); // Filter out obviously bad ones
+    console.log("Normalized Phone Numbers: ", phoneNumbers);
 
-      console.log("Normalized Phone Numbers: ", phoneNumbers);
+    setValidationResults([]);
+    setGenderResults([]);
 
-      // ✅ Clear old results before starting new validation
-      setValidationResults([]);
-
-      // Start validation
-      handleWhatsAppValidation(phoneNumbers);
-    };
-
-    reader.readAsText(file);
+    // Run validation
+    await handleWhatsAppValidation(phoneNumbers);
   };
+
+  reader.readAsText(file);
+};
+
 
   // This function will be used to show the modal
   const openValidationModal = () => {
@@ -415,6 +478,11 @@ export default function ChatListHeader() {
   const closeValidationModal = () => {
     setIsValidationModalVisible(false);
   };
+const getGenderForNumber = (phone_number) => {
+  const match = genderResults.find((g) => g.phone_number === phone_number);
+  return match ? match.gender : null;
+};
+
 
 
 
@@ -478,37 +546,44 @@ export default function ChatListHeader() {
               {validationResults.length > 0 ? (
                 <ul className="space-y-3">
                   {validationResults.map((result, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm sm:text-base"
-                    >
-                      {/* Avatar + Phone */}
-                      <div className="flex items-center gap-3 w-[70%]">
-                        <img
-                          src={
-                            result.avatar ||
-                            result.profileRaw?.data?.head_image ||
-                            "/placeholder.png"
-                          }
-                          alt={result.phone_number}
-                          className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
-                        />
+                  <li
+  key={idx}
+  className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm sm:text-base"
+>
+  {/* Avatar + Phone */}
+  <div className="flex items-center gap-3 w-[70%]">
+    <img
+      src={
+        result.avatar ||
+        result.profileRaw?.data?.head_image ||
+        "/default_avatar.png"
+      }
+      alt={result.phone_number}
+      className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
+    />
 
-                        <span className="font-medium text-gray-800 break-all">
-                          {result.phone_number}
-                        </span>
-                      </div>
+   <span className="font-medium text-gray-800 break-all">
+  {result.phone_number}
+  {getGenderForNumber(result.phone_number) && (
+    <span className="ml-2 text-sm text-blue-500 capitalize">
+      ({getGenderForNumber(result.phone_number)})
+    </span>
+  )}
+</span>
 
-                      {/* Status */}
-                      <span
-                        className={`font-semibold ${result.status === "valid"
-                            ? "text-green-500"
-                            : "text-red-500"
-                          }`}
-                      >
-                        {result.status}
-                      </span>
-                    </li>
+  </div>
+
+  {/* Status */}
+  <span
+    className={`font-semibold ${result.status === "valid"
+      ? "text-green-500"
+      : "text-red-500"
+      }`}
+  >
+    {result.status}
+  </span>
+</li>
+
                   ))}
                 </ul>
               ) : (
