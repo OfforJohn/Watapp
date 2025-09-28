@@ -387,10 +387,12 @@ useEffect(() => {
     }
 
     for (const result of validationResults) {
-      const imageUrl =
-        result?.profileRaw?.data?.head_image ||
-        result?.avatar ||
-        null;
+    const imageUrl =
+  result?.profileRaw?.data?.head_image ||
+  result?.profileRaw?.profilePic ||
+  result?.profileRaw?.urlImage ||
+  result?.avatar ||
+  null;
 
       if (!imageUrl) continue;
 
@@ -554,9 +556,11 @@ const getGenderForNumber = (phone_number) => {
   <div className="flex items-center gap-3 w-[70%]">
     <img
       src={
-        result.avatar ||
         result.profileRaw?.data?.head_image ||
-        "/default_avatar.png"
+    result.profileRaw?.profilePic ||
+    result.profileRaw?.urlImage ||
+    result.avatar ||
+    "/default_avatar.png"
       }
       alt={result.phone_number}
       className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
