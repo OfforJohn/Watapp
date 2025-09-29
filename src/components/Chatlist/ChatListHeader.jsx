@@ -3,6 +3,7 @@ import { BsFillChatLeftTextFill, BsThreeDotsVertical } from "react-icons/bs";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { useRouter } from "next/router";
+import * as XLSX from "xlsx";
 import * as faceapi from 'face-api.js';
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
@@ -19,6 +20,7 @@ export default function ChatListHeader() {
   const [{ userInfo }, dispatch] = useStateProvider();
   const [genderResults, setGenderResults] = useState([]);
   const router = useRouter();
+const [isDownloadPromptVisible, setIsDownloadPromptVisible] = useState(false);
 
   const [contextMenuCordinates, setContextMenuCordinates] = useState({ x: 0, y: 0 });
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
@@ -400,13 +402,25 @@ export default function ChatListHeader() {
 
         try {
           const img = await loadImage(imageUrl);
+          
+          console.log("✅ Image loaded successfully");
 
+          console.log("🧠 Running face detection...");
           const detection = await faceapi
+
+          
             .detectSingleFace(img)
             .withAgeAndGender();
 
           if (detection) {
             const { gender, age } = detection;
+
+            console.log(`✅ Detection result for ${result.phone_number}:`, {
+              gender,
+              age: Math.round(age),
+            });
+            
+            
 
             setGenderResults((prev) => [
               ...prev,
@@ -442,11 +456,6 @@ export default function ChatListHeader() {
   runGenderDetection();
 }, [validationResults]);
 
-
-
-
-
-
   // Handle CSV Upload for WhatsApp Validation
  const handleCSVUploadForValidation = (event) => {
   const file = event.target.files[0];
@@ -480,6 +489,59 @@ export default function ChatListHeader() {
 };
 
 
+const handleDownloadCSV = (genderFilter) => {
+  if (!validationResults.length) return;
+
+  const resultsWithGender = validationResults.map((result) => {
+    const genderData = genderResults.find(
+      (g) => g.phone_number === result.phone_number
+    );
+
+    return {
+      Phone: result.phone_number,
+      Status: result.status,
+      Gender: genderData?.gender || "unknown",
+      Age: genderData?.age || "unknown",
+      Image:
+        result?.profileRaw?.data?.head_image ||
+        result?.profileRaw?.profilePic ||
+        result?.profileRaw?.urlImage ||
+        result?.avatar ||
+        "/default_avatar.png",
+    };
+  });
+
+  const filtered = resultsWithGender.filter(
+    (r) => r.Gender === genderFilter
+  );
+
+  if (!filtered.length) {
+    alert(`No ${genderFilter} results found.`);
+    return;
+  }
+
+  const headers = Object.keys(filtered[0]).join(",");
+  const rows = filtered
+    .map((row) =>
+      Object.values(row)
+        .map((val) => `"${val}"`)
+        .join(",")
+    )
+    .join("\n");
+
+  const csvContent = `${headers}\n${rows}`;
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${genderFilter}_results.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+
+
   // This function will be used to show the modal
   const openValidationModal = () => {
     setIsValidationModalVisible(true);
@@ -491,6 +553,12 @@ export default function ChatListHeader() {
 const getGenderForNumber = (phone_number) => {
   const match = genderResults.find((g) => g.phone_number === phone_number);
   return match ? match.gender : null;
+};
+
+
+const getAgeForNumber = (phoneNumber) => {
+  const match = genderResults.find(r => r.phone_number === phoneNumber);
+  return match?.age || null;
 };
 
 
@@ -573,13 +641,18 @@ const getGenderForNumber = (phone_number) => {
       alt={result.phone_number}
       className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
     />
+ <span className="font-medium text-gray-800 break-all">
+    {result.phone_number}
 
-   <span className="font-medium text-gray-800 break-all">
-  {result.phone_number}
-  {getGenderForNumber(result.phone_number) && (
-    <span className="ml-2 text-sm text-blue-500 capitalize">
-      ({getGenderForNumber(result.phone_number)})
-    </span>
+    {/* 👇 Show gender and age if available */}
+    {getGenderForNumber(result.phone_number) && (
+      <span className="ml-2 text-sm text-blue-500 capitalize">
+        ({getGenderForNumber(result.phone_number)}
+        {getAgeForNumber(result.phone_number) && (
+          <> - {getAgeForNumber(result.phone_number)} yrs</>
+        )}
+        )
+      </span>
   )}
 </span>
 
@@ -604,17 +677,63 @@ const getGenderForNumber = (phone_number) => {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end p-4 border-t">
-              <button
-                onClick={closeValidationModal}
-                className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
+<div className="flex justify-end p-4 border-t space-x-2">
+  <button
+    onClick={() => setIsDownloadPromptVisible(true)}
+    className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+  >
+    Download CSV
+  </button>
+  <button
+    onClick={closeValidationModal}
+    className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
+  >
+    Close
+  </button>
+</div>
+
+
+
           </div>
         </div>
       )}
+
+      {isDownloadPromptVisible && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 px-4">
+    <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center animate-fadeIn">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+        Which gender results would you like to download?
+      </h3>
+      <div className="flex justify-center gap-4">
+        <button
+          onClick={() => {
+            handleDownloadCSV("male");
+            setIsDownloadPromptVisible(false);
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+        >
+          Male
+        </button>
+        <button
+          onClick={() => {
+            handleDownloadCSV("female");
+            setIsDownloadPromptVisible(false);
+          }}
+          className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+        >
+          Female
+        </button>
+      </div>
+      <button
+        onClick={() => setIsDownloadPromptVisible(false)}
+        className="mt-4 text-sm text-gray-500 hover:underline"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+)}
+
 
 
 
