@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.8.0",
+    "@tensorflow/tfjs": "^4.22.0",
     "@vercel/blob": "^1.1.1",
+    "@vladmandic/face-api": "^1.7.15",
     "autoprefixer": "^10.4.14",
     "axios": "^1.4.0",
     "dotenv": "^17.2.1",

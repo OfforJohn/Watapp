@@ -373,35 +373,34 @@ export default function ChatListHeader() {
     if (allResults.length > 0) setIsValidationModalVisible(true);
     toast.success("WhatsApp validation completed with profiles.");
   };
-useEffect(() => {
+
+  useEffect(() => {
   const runGenderDetection = async () => {
     if (!validationResults.length) return;
 
     try {
+      // Load models
       await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
       await faceapi.nets.ageGenderNet.loadFromUri("/models");
       console.log("face-api models loaded");
-    } catch (err) {
-      console.error("Error loading face-api models:", err);
-      return;
-    }
 
-    for (const result of validationResults) {
-    const imageUrl =
-  result?.profileRaw?.data?.head_image ||
-  result?.profileRaw?.profilePic ||
-  result?.profileRaw?.urlImage ||
-  result?.avatar ||
-  null;
+      // Process each image sequentially (or use Promise.all for parallel)
+      for (const result of validationResults) {
+        const imageUrl =
+          result?.profileRaw?.data?.head_image ||
+          result?.profileRaw?.profilePic ||
+          result?.profileRaw?.urlImage ||
+          result?.avatar ||
+          null;
 
-      if (!imageUrl) continue;
+        if (!imageUrl) {
+          console.warn(`No image URL for ${result.phone_number}`);
+          continue;
+        }
 
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = imageUrl;
-
-      img.onload = async () => {
         try {
+          const img = await loadImage(imageUrl);
+
           const detection = await faceapi
             .detectSingleFace(img)
             .withAgeAndGender();
@@ -423,12 +422,21 @@ useEffect(() => {
         } catch (err) {
           console.error(`Detection failed for ${result.phone_number}:`, err);
         }
-      };
-
-      img.onerror = (err) => {
-        console.error(`Image failed to load for ${result.phone_number}:`, err);
-      };
+      }
+    } catch (err) {
+      console.error("Error during face-api setup or processing:", err);
     }
+  };
+
+  // Utility to load image as a Promise
+  const loadImage = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = url;
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`));
+    });
   };
 
   runGenderDetection();
