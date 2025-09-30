@@ -20,7 +20,7 @@ export default function ChatListHeader() {
   const [{ userInfo }, dispatch] = useStateProvider();
   const [genderResults, setGenderResults] = useState([]);
   const router = useRouter();
-const [isDownloadPromptVisible, setIsDownloadPromptVisible] = useState(false);
+  const [isDownloadPromptVisible, setIsDownloadPromptVisible] = useState(false);
 
   const [contextMenuCordinates, setContextMenuCordinates] = useState({ x: 0, y: 0 });
   const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
@@ -28,6 +28,8 @@ const [isDownloadPromptVisible, setIsDownloadPromptVisible] = useState(false);
   const [isBroadcastModalVisible, setIsBroadcastModalVisible] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
 
+const [startAge, setStartAge] = useState("");
+const [endAge, setEndAge] = useState("");
 
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [selectedGender, setSelectedGender] = useState("male");
@@ -377,119 +379,119 @@ const [isDownloadPromptVisible, setIsDownloadPromptVisible] = useState(false);
   };
 
   useEffect(() => {
-  const runGenderDetection = async () => {
-    if (!validationResults.length) return;
+    const runGenderDetection = async () => {
+      if (!validationResults.length) return;
 
-    try {
-      // Load models
-      await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
-      await faceapi.nets.ageGenderNet.loadFromUri("/models");
-      console.log("face-api models loaded");
+      try {
+        // Load models
+        await faceapi.nets.ssdMobilenetv1.loadFromUri("/models");
+        await faceapi.nets.ageGenderNet.loadFromUri("/models");
+        console.log("face-api models loaded");
 
-      // Process each image sequentially (or use Promise.all for parallel)
-      for (const result of validationResults) {
-        const imageUrl =
-          result?.profileRaw?.data?.head_image ||
-          result?.profileRaw?.profilePic ||
-          result?.profileRaw?.urlImage ||
-          result?.avatar ||
-          null;
+        // Process each image sequentially (or use Promise.all for parallel)
+        for (const result of validationResults) {
+          const imageUrl =
+            result?.profileRaw?.data?.head_image ||
+            result?.profileRaw?.profilePic ||
+            result?.profileRaw?.urlImage ||
+            result?.avatar ||
+            null;
 
-        if (!imageUrl) {
-          console.warn(`No image URL for ${result.phone_number}`);
-          continue;
-        }
+          if (!imageUrl) {
+            console.warn(`No image URL for ${result.phone_number}`);
+            continue;
+          }
 
-        try {
-          const img = await loadImage(imageUrl);
-          
-          console.log("✅ Image loaded successfully");
+          try {
+            const img = await loadImage(imageUrl);
 
-          console.log("🧠 Running face detection...");
-          const detection = await faceapi
+            console.log("✅ Image loaded successfully");
 
-          
-            .detectSingleFace(img)
-            .withAgeAndGender();
+            console.log("🧠 Running face detection...");
+            const detection = await faceapi
 
-          if (detection) {
-            const { gender, age } = detection;
 
-            console.log(`✅ Detection result for ${result.phone_number}:`, {
-              gender,
-              age: Math.round(age),
-            });
-            
-            
+              .detectSingleFace(img)
+              .withAgeAndGender();
 
-            setGenderResults((prev) => [
-              ...prev,
-              {
-                phone_number: result.phone_number,
+            if (detection) {
+              const { gender, age } = detection;
+
+              console.log(`✅ Detection result for ${result.phone_number}:`, {
                 gender,
                 age: Math.round(age),
-              },
-            ]);
-          } else {
-            console.warn(`No face detected for ${result.phone_number}`);
+              });
+
+
+
+              setGenderResults((prev) => [
+                ...prev,
+                {
+                  phone_number: result.phone_number,
+                  gender,
+                  age: Math.round(age),
+                },
+              ]);
+            } else {
+              console.warn(`No face detected for ${result.phone_number}`);
+            }
+          } catch (err) {
+            console.error(`Detection failed for ${result.phone_number}:`, err);
           }
-        } catch (err) {
-          console.error(`Detection failed for ${result.phone_number}:`, err);
         }
+      } catch (err) {
+        console.error("Error during face-api setup or processing:", err);
       }
-    } catch (err) {
-      console.error("Error during face-api setup or processing:", err);
-    }
-  };
+    };
 
-  // Utility to load image as a Promise
-  const loadImage = (url) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = url;
-      img.onload = () => resolve(img);
-      img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`));
-    });
-  };
+    // Utility to load image as a Promise
+    const loadImage = (url) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = url;
+        img.onload = () => resolve(img);
+        img.onerror = (err) => reject(new Error(`Failed to load image: ${url}`));
+      });
+    };
 
-  runGenderDetection();
-}, [validationResults]);
+    runGenderDetection();
+  }, [validationResults]);
 
   // Handle CSV Upload for WhatsApp Validation
- const handleCSVUploadForValidation = (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const handleCSVUploadForValidation = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const text = e.target.result;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
 
-    const phoneNumbers = text
-      .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line)
-      .map((line) => {
-        const parts = line.split(",");
-        const raw = parts[1] ? parts[1].trim() : line.trim();
-        return raw.replace(/\D/g, ""); // normalize
-      })
-      .filter((num) => num.length > 6);
+      const phoneNumbers = text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter((line) => line)
+        .map((line) => {
+          const parts = line.split(",");
+          const raw = parts[1] ? parts[1].trim() : line.trim();
+          return raw.replace(/\D/g, ""); // normalize
+        })
+        .filter((num) => num.length > 6);
 
-    console.log("Normalized Phone Numbers: ", phoneNumbers);
+      console.log("Normalized Phone Numbers: ", phoneNumbers);
 
-    setValidationResults([]);
-    setGenderResults([]);
+      setValidationResults([]);
+      setGenderResults([]);
 
-    // Run validation
-    await handleWhatsAppValidation(phoneNumbers);
+      // Run validation
+      await handleWhatsAppValidation(phoneNumbers);
+    };
+
+    reader.readAsText(file);
   };
 
-  reader.readAsText(file);
-};
 
-
-const handleDownloadCSV = (genderFilter) => {
+const handleDownloadCSV = (genderFilter, startAge = null, endAge = null) => {
   if (!validationResults.length) return;
 
   const resultsWithGender = validationResults.map((result) => {
@@ -511,12 +513,27 @@ const handleDownloadCSV = (genderFilter) => {
     };
   });
 
-  const filtered = resultsWithGender.filter(
-    (r) => r.Gender === genderFilter
-  );
+  // Filter by gender
+  let filtered = resultsWithGender.filter((r) => r.Gender === genderFilter);
+
+  // Optional: Filter by age range if provided
+  if (startAge !== null && endAge !== null) {
+    const minAge = parseInt(startAge);
+    const maxAge = parseInt(endAge);
+
+    if (isNaN(minAge) || isNaN(maxAge) || minAge > maxAge) {
+      alert("Please enter a valid age range.");
+      return;
+    }
+
+    filtered = filtered.filter((r) => {
+      const age = parseInt(r.Age);
+      return !isNaN(age) && age >= minAge && age <= maxAge;
+    });
+  }
 
   if (!filtered.length) {
-    alert(`No ${genderFilter} results found.`);
+    alert(`No ${genderFilter} results found${startAge && endAge ? ` in age range ${startAge}-${endAge}` : ""}.`);
     return;
   }
 
@@ -534,7 +551,7 @@ const handleDownloadCSV = (genderFilter) => {
 
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${genderFilter}_results.csv`;
+  link.download = `${genderFilter}_results${startAge && endAge ? `_age_${startAge}-${endAge}` : ""}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -550,16 +567,16 @@ const handleDownloadCSV = (genderFilter) => {
   const closeValidationModal = () => {
     setIsValidationModalVisible(false);
   };
-const getGenderForNumber = (phone_number) => {
-  const match = genderResults.find((g) => g.phone_number === phone_number);
-  return match ? match.gender : null;
-};
+  const getGenderForNumber = (phone_number) => {
+    const match = genderResults.find((g) => g.phone_number === phone_number);
+    return match ? match.gender : null;
+  };
 
 
-const getAgeForNumber = (phoneNumber) => {
-  const match = genderResults.find(r => r.phone_number === phoneNumber);
-  return match?.age || null;
-};
+  const getAgeForNumber = (phoneNumber) => {
+    const match = genderResults.find(r => r.phone_number === phoneNumber);
+    return match?.age || null;
+  };
 
 
 
@@ -624,50 +641,50 @@ const getAgeForNumber = (phoneNumber) => {
               {validationResults.length > 0 ? (
                 <ul className="space-y-3">
                   {validationResults.map((result, idx) => (
-                  <li
-  key={idx}
-  className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm sm:text-base"
->
-  {/* Avatar + Phone */}
-  <div className="flex items-center gap-3 w-[70%]">
-    <img
-      src={
-        result.profileRaw?.data?.head_image ||
-    result.profileRaw?.profilePic ||
-    result.profileRaw?.urlImage ||
-    result.avatar ||
-    "/default_avatar.png"
-      }
-      alt={result.phone_number}
-      className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
-    />
- <span className="font-medium text-gray-800 break-all">
-    {result.phone_number}
+                    <li
+                      key={idx}
+                      className="flex items-center justify-between border-b border-gray-200 pb-2 text-sm sm:text-base"
+                    >
+                      {/* Avatar + Phone */}
+                      <div className="flex items-center gap-3 w-[70%]">
+                        <img
+                          src={
+                            result.profileRaw?.data?.head_image ||
+                            result.profileRaw?.profilePic ||
+                            result.profileRaw?.urlImage ||
+                            result.avatar ||
+                            "/default_avatar.png"
+                          }
+                          alt={result.phone_number}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-300 flex-shrink-0"
+                        />
+                        <span className="font-medium text-gray-800 break-all">
+                          {result.phone_number}
 
-    {/* 👇 Show gender and age if available */}
-    {getGenderForNumber(result.phone_number) && (
-      <span className="ml-2 text-sm text-blue-500 capitalize">
-        ({getGenderForNumber(result.phone_number)}
-        {getAgeForNumber(result.phone_number) && (
-          <> - {getAgeForNumber(result.phone_number)} yrs</>
-        )}
-        )
-      </span>
-  )}
-</span>
+                          {/* 👇 Show gender and age if available */}
+                          {getGenderForNumber(result.phone_number) && (
+                            <span className="ml-2 text-sm text-blue-500 capitalize">
+                              ({getGenderForNumber(result.phone_number)}
+                              {getAgeForNumber(result.phone_number) && (
+                                <> - {getAgeForNumber(result.phone_number)} yrs</>
+                              )}
+                              )
+                            </span>
+                          )}
+                        </span>
 
-  </div>
+                      </div>
 
-  {/* Status */}
-  <span
-    className={`font-semibold ${result.status === "valid"
-      ? "text-green-500"
-      : "text-red-500"
-      }`}
-  >
-    {result.status}
-  </span>
-</li>
+                      {/* Status */}
+                      <span
+                        className={`font-semibold ${result.status === "valid"
+                          ? "text-green-500"
+                          : "text-red-500"
+                          }`}
+                      >
+                        {result.status}
+                      </span>
+                    </li>
 
                   ))}
                 </ul>
@@ -677,37 +694,57 @@ const getAgeForNumber = (phoneNumber) => {
             </div>
 
             {/* Footer */}
-<div className="flex justify-end p-4 border-t space-x-2">
-  <button
-    onClick={() => setIsDownloadPromptVisible(true)}
-    className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-  >
-    Download CSV
-  </button>
-  <button
-    onClick={closeValidationModal}
-    className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
-  >
-    Close
-  </button>
-</div>
+            <div className="flex justify-end p-4 border-t space-x-2">
+              <button
+                onClick={() => setIsDownloadPromptVisible(true)}
+                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Download CSV
+              </button>
+              <button
+                onClick={closeValidationModal}
+                className="px-4 py-2 rounded-md bg-gray-300 text-gray-700 hover:bg-gray-400"
+              >
+                Close
+              </button>
+            </div>
 
 
 
           </div>
         </div>
       )}
+      
 
-      {isDownloadPromptVisible && (
+
+{isDownloadPromptVisible && (
   <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 px-4">
     <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center animate-fadeIn">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Which gender results would you like to download?
+        Download gender results by age range
       </h3>
+
+      <div className="flex flex-col gap-3 mb-4">
+        <input
+          type="number"
+          placeholder="Start Age"
+          value={startAge}
+          onChange={(e) => setStartAge(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        />
+        <input
+          type="number"
+          placeholder="End Age"
+          value={endAge}
+          onChange={(e) => setEndAge(e.target.value)}
+          className="border rounded px-3 py-2 w-full"
+        />
+      </div>
+
       <div className="flex justify-center gap-4">
         <button
           onClick={() => {
-            handleDownloadCSV("male");
+            handleDownloadCSV("male", startAge, endAge);
             setIsDownloadPromptVisible(false);
           }}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -716,7 +753,7 @@ const getAgeForNumber = (phoneNumber) => {
         </button>
         <button
           onClick={() => {
-            handleDownloadCSV("female");
+            handleDownloadCSV("female", startAge, endAge);
             setIsDownloadPromptVisible(false);
           }}
           className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
@@ -724,6 +761,7 @@ const getAgeForNumber = (phoneNumber) => {
           Female
         </button>
       </div>
+
       <button
         onClick={() => setIsDownloadPromptVisible(false)}
         className="mt-4 text-sm text-gray-500 hover:underline"
@@ -733,6 +771,7 @@ const getAgeForNumber = (phoneNumber) => {
     </div>
   </div>
 )}
+
 
 
 
