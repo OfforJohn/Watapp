@@ -3,7 +3,6 @@ import { BsFillChatLeftTextFill, BsThreeDotsVertical } from "react-icons/bs";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { useRouter } from "next/router";
-import * as XLSX from "xlsx";
 import * as faceapi from 'face-api.js';
 import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
@@ -342,41 +341,59 @@ const [endAge, setEndAge] = useState("");
     },
 
   ];
+const updateSource = useRef("initial"); // can be "initial" | "storage" | "validation"
 
-  useEffect(() => {
-    if (validationResults.length > 0) {
-      setIsValidationModalVisible(true);
+useEffect(() => {
+  const savedResults = localStorage.getItem("validationResults");
+  if (savedResults) {
+    updateSource.current = "storage"; // 🟡 Mark source as storage
+    setValidationResults(JSON.parse(savedResults));
+  }
+}, []);
+useEffect(() => {
+  if (updateSource.current !== "validation") return;
+
+  if (validationResults.length > 0) {
+    setIsValidationModalVisible(true);
+  }
+}, [validationResults]);
+
+
+const handleWhatsAppValidation = async (phoneNumbers) => {
+  const chunkSize = 10;
+  updateSource.current = "validation"; // 🟢 Mark source as new validation
+  setValidationResults([]);
+  localStorage.removeItem("validationResults");
+  let allResults = [];
+
+  for (let i = 0; i < phoneNumbers.length; i += chunkSize) {
+    const chunk = phoneNumbers.slice(i, i + chunkSize);
+
+    try {
+      const response = await axios.post(
+        "https://render-backend-ksnp.onrender.com/api/validate-whatsapp-profiles",
+        { phone_numbers: chunk }
+      );
+
+      const mergedResults = response.data;
+      allResults = [...allResults, ...mergedResults];
+      setValidationResults((prev) => {
+        const updatedResults = [...prev, ...mergedResults];
+        localStorage.setItem("validationResults", JSON.stringify(updatedResults));
+        return updatedResults;
+      });
+
+      console.log(`Batch ${i / chunkSize + 1} merged:`, mergedResults);
+    } catch (err) {
+      console.error(`Batch ${i / chunkSize + 1} failed:`, err);
+      toast.error(`Batch ${i / chunkSize + 1} failed.`);
     }
-  }, [validationResults]);
+  }
 
-  const handleWhatsAppValidation = async (phoneNumbers) => {
-    const chunkSize = 10;
-    setValidationResults([]);
-    let allResults = [];
+  toast.success("WhatsApp validation completed with profiles.");
+};
 
-    for (let i = 0; i < phoneNumbers.length; i += chunkSize) {
-      const chunk = phoneNumbers.slice(i, i + chunkSize);
 
-      try {
-        const response = await axios.post(
-          "https://render-backend-ksnp.onrender.com/api/validate-whatsapp-profiles",
-          { phone_numbers: chunk }
-        );
-
-        const mergedResults = response.data;
-        allResults = [...allResults, ...mergedResults];
-        setValidationResults((prev) => [...prev, ...mergedResults]);
-
-        console.log(`Batch ${i / chunkSize + 1} merged:`, mergedResults);
-      } catch (err) {
-        console.error(`Batch ${i / chunkSize + 1} failed:`, err);
-        toast.error(`Batch ${i / chunkSize + 1} failed.`);
-      }
-    }
-
-    if (allResults.length > 0) setIsValidationModalVisible(true);
-    toast.success("WhatsApp validation completed with profiles.");
-  };
 
   useEffect(() => {
     const runGenderDetection = async () => {
