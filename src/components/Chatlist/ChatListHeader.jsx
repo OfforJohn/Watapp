@@ -27,8 +27,8 @@ export default function ChatListHeader() {
   const [isBroadcastModalVisible, setIsBroadcastModalVisible] = useState(false);
   const [broadcastMessage, setBroadcastMessage] = useState("");
 
-const [startAge, setStartAge] = useState("");
-const [endAge, setEndAge] = useState("");
+  const [startAge, setStartAge] = useState("");
+  const [endAge, setEndAge] = useState("");
 
   const [isImportModalVisible, setIsImportModalVisible] = useState(false);
   const [selectedGender, setSelectedGender] = useState("male");
@@ -341,57 +341,57 @@ const [endAge, setEndAge] = useState("");
     },
 
   ];
-const updateSource = useRef("initial"); // can be "initial" | "storage" | "validation"
+  const updateSource = useRef("initial"); // can be "initial" | "storage" | "validation"
 
-useEffect(() => {
-  const savedResults = localStorage.getItem("validationResults");
-  if (savedResults) {
-    updateSource.current = "storage"; // 🟡 Mark source as storage
-    setValidationResults(JSON.parse(savedResults));
-  }
-}, []);
-useEffect(() => {
-  if (updateSource.current !== "validation") return;
-
-  if (validationResults.length > 0) {
-    setIsValidationModalVisible(true);
-  }
-}, [validationResults]);
-
-
-const handleWhatsAppValidation = async (phoneNumbers) => {
-  const chunkSize = 10;
-  updateSource.current = "validation"; // 🟢 Mark source as new validation
-  setValidationResults([]);
-  localStorage.removeItem("validationResults");
-  let allResults = [];
-
-  for (let i = 0; i < phoneNumbers.length; i += chunkSize) {
-    const chunk = phoneNumbers.slice(i, i + chunkSize);
-
-    try {
-      const response = await axios.post(
-        "https://render-backend-ksnp.onrender.com/api/validate-whatsapp-profiles",
-        { phone_numbers: chunk }
-      );
-
-      const mergedResults = response.data;
-      allResults = [...allResults, ...mergedResults];
-      setValidationResults((prev) => {
-        const updatedResults = [...prev, ...mergedResults];
-        localStorage.setItem("validationResults", JSON.stringify(updatedResults));
-        return updatedResults;
-      });
-
-      console.log(`Batch ${i / chunkSize + 1} merged:`, mergedResults);
-    } catch (err) {
-      console.error(`Batch ${i / chunkSize + 1} failed:`, err);
-      toast.error(`Batch ${i / chunkSize + 1} failed.`);
+  useEffect(() => {
+    const savedResults = localStorage.getItem("validationResults");
+    if (savedResults) {
+      updateSource.current = "storage"; // 🟡 Mark source as storage
+      setValidationResults(JSON.parse(savedResults));
     }
-  }
+  }, []);
+  useEffect(() => {
+    if (updateSource.current !== "validation") return;
 
-  toast.success("WhatsApp validation completed with profiles.");
-};
+    if (validationResults.length > 0) {
+      setIsValidationModalVisible(true);
+    }
+  }, [validationResults]);
+
+
+  const handleWhatsAppValidation = async (phoneNumbers) => {
+    const chunkSize = 10;
+    updateSource.current = "validation"; // 🟢 Mark source as new validation
+    setValidationResults([]);
+    localStorage.removeItem("validationResults");
+    let allResults = [];
+
+    for (let i = 0; i < phoneNumbers.length; i += chunkSize) {
+      const chunk = phoneNumbers.slice(i, i + chunkSize);
+
+      try {
+        const response = await axios.post(
+          "https://render-backend-ksnp.onrender.com/api/validate-whatsapp-profiles",
+          { phone_numbers: chunk }
+        );
+
+        const mergedResults = response.data;
+        allResults = [...allResults, ...mergedResults];
+        setValidationResults((prev) => {
+          const updatedResults = [...prev, ...mergedResults];
+          localStorage.setItem("validationResults", JSON.stringify(updatedResults));
+          return updatedResults;
+        });
+
+        console.log(`Batch ${i / chunkSize + 1} merged:`, mergedResults);
+      } catch (err) {
+        console.error(`Batch ${i / chunkSize + 1} failed:`, err);
+        toast.error(`Batch ${i / chunkSize + 1} failed.`);
+      }
+    }
+
+    toast.success("WhatsApp validation completed with profiles.");
+  };
 
 
 
@@ -420,7 +420,9 @@ const handleWhatsAppValidation = async (phoneNumbers) => {
           }
 
           try {
-            const img = await loadImage(imageUrl);
+            const proxyUrl = `https://render-backend-ksnp.onrender.com/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+            const img = await loadImage(proxyUrl);
+
 
             console.log("✅ Image loaded successfully");
 
@@ -508,71 +510,71 @@ const handleWhatsAppValidation = async (phoneNumbers) => {
   };
 
 
-const handleDownloadCSV = (genderFilter, startAge = null, endAge = null) => {
-  if (!validationResults.length) return;
+  const handleDownloadCSV = (genderFilter, startAge = null, endAge = null) => {
+    if (!validationResults.length) return;
 
-  const resultsWithGender = validationResults.map((result) => {
-    const genderData = genderResults.find(
-      (g) => g.phone_number === result.phone_number
-    );
+    const resultsWithGender = validationResults.map((result) => {
+      const genderData = genderResults.find(
+        (g) => g.phone_number === result.phone_number
+      );
 
-    return {
-      Phone: result.phone_number,
-      Status: result.status,
-      Gender: genderData?.gender || "unknown",
-      Age: genderData?.age || "unknown",
-      Image:
-        result?.profileRaw?.data?.head_image ||
-        result?.profileRaw?.profilePic ||
-        result?.profileRaw?.urlImage ||
-        result?.avatar ||
-        "/default_avatar.png",
-    };
-  });
+      return {
+        Phone: result.phone_number,
+        Status: result.status,
+        Gender: genderData?.gender || "unknown",
+        Age: genderData?.age || "unknown",
+        Image:
+          result?.profileRaw?.data?.head_image ||
+          result?.profileRaw?.profilePic ||
+          result?.profileRaw?.urlImage ||
+          result?.avatar ||
+          "/default_avatar.png",
+      };
+    });
 
-  // Filter by gender
-  let filtered = resultsWithGender.filter((r) => r.Gender === genderFilter);
+    // Filter by gender
+    let filtered = resultsWithGender.filter((r) => r.Gender === genderFilter);
 
-  // Optional: Filter by age range if provided
-  if (startAge !== null && endAge !== null) {
-    const minAge = parseInt(startAge);
-    const maxAge = parseInt(endAge);
+    // Optional: Filter by age range if provided
+    if (startAge !== null && endAge !== null) {
+      const minAge = parseInt(startAge);
+      const maxAge = parseInt(endAge);
 
-    if (isNaN(minAge) || isNaN(maxAge) || minAge > maxAge) {
-      alert("Please enter a valid age range.");
+      if (isNaN(minAge) || isNaN(maxAge) || minAge > maxAge) {
+        alert("Please enter a valid age range.");
+        return;
+      }
+
+      filtered = filtered.filter((r) => {
+        const age = parseInt(r.Age);
+        return !isNaN(age) && age >= minAge && age <= maxAge;
+      });
+    }
+
+    if (!filtered.length) {
+      alert(`No ${genderFilter} results found${startAge && endAge ? ` in age range ${startAge}-${endAge}` : ""}.`);
       return;
     }
 
-    filtered = filtered.filter((r) => {
-      const age = parseInt(r.Age);
-      return !isNaN(age) && age >= minAge && age <= maxAge;
-    });
-  }
+    const headers = Object.keys(filtered[0]).join(",");
+    const rows = filtered
+      .map((row) =>
+        Object.values(row)
+          .map((val) => `"${val}"`)
+          .join(",")
+      )
+      .join("\n");
 
-  if (!filtered.length) {
-    alert(`No ${genderFilter} results found${startAge && endAge ? ` in age range ${startAge}-${endAge}` : ""}.`);
-    return;
-  }
+    const csvContent = `${headers}\n${rows}`;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
 
-  const headers = Object.keys(filtered[0]).join(",");
-  const rows = filtered
-    .map((row) =>
-      Object.values(row)
-        .map((val) => `"${val}"`)
-        .join(",")
-    )
-    .join("\n");
-
-  const csvContent = `${headers}\n${rows}`;
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = `${genderFilter}_results${startAge && endAge ? `_age_${startAge}-${endAge}` : ""}.csv`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${genderFilter}_results${startAge && endAge ? `_age_${startAge}-${endAge}` : ""}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
 
 
@@ -731,63 +733,63 @@ const handleDownloadCSV = (genderFilter, startAge = null, endAge = null) => {
           </div>
         </div>
       )}
-      
 
 
-{isDownloadPromptVisible && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 px-4">
-    <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center animate-fadeIn">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Download gender results by age range
-      </h3>
 
-      <div className="flex flex-col gap-3 mb-4">
-        <input
-          type="number"
-          placeholder="Start Age"
-          value={startAge}
-          onChange={(e) => setStartAge(e.target.value)}
-          className="border rounded px-3 py-2 w-full"
-        />
-        <input
-          type="number"
-          placeholder="End Age"
-          value={endAge}
-          onChange={(e) => setEndAge(e.target.value)}
-          className="border rounded px-3 py-2 w-full"
-        />
-      </div>
+      {isDownloadPromptVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50 px-4">
+          <div className="bg-white rounded-lg p-6 shadow-lg max-w-sm w-full text-center animate-fadeIn">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Download gender results by age range
+            </h3>
 
-      <div className="flex justify-center gap-4">
-        <button
-          onClick={() => {
-            handleDownloadCSV("male", startAge, endAge);
-            setIsDownloadPromptVisible(false);
-          }}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Male
-        </button>
-        <button
-          onClick={() => {
-            handleDownloadCSV("female", startAge, endAge);
-            setIsDownloadPromptVisible(false);
-          }}
-          className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-        >
-          Female
-        </button>
-      </div>
+            <div className="flex flex-col gap-3 mb-4">
+              <input
+                type="number"
+                placeholder="Start Age"
+                value={startAge}
+                onChange={(e) => setStartAge(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+              />
+              <input
+                type="number"
+                placeholder="End Age"
+                value={endAge}
+                onChange={(e) => setEndAge(e.target.value)}
+                className="border rounded px-3 py-2 w-full"
+              />
+            </div>
 
-      <button
-        onClick={() => setIsDownloadPromptVisible(false)}
-        className="mt-4 text-sm text-gray-500 hover:underline"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-)}
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => {
+                  handleDownloadCSV("male", startAge, endAge);
+                  setIsDownloadPromptVisible(false);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Male
+              </button>
+              <button
+                onClick={() => {
+                  handleDownloadCSV("female", startAge, endAge);
+                  setIsDownloadPromptVisible(false);
+                }}
+                className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+              >
+                Female
+              </button>
+            </div>
+
+            <button
+              onClick={() => setIsDownloadPromptVisible(false)}
+              className="mt-4 text-sm text-gray-500 hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
 
 
