@@ -41,45 +41,42 @@ export default function OnBoarding() {
       );
     });
 
-const onBoardUser = async () => {
-  if (!validateDetails()) return;
-
-  const email = userInfo?.email;
-
-  try {
-    const base64Response = await fetch(image);
-    const blob = await base64Response.blob();
-    const resizedImage = await resizeFile(blob);
-
-    const { data } = await axios.post(onBoardUserRoute, {
-      email,
-      name,
-      about,
-      firebaseUid: userInfo.firebaseUid,   // FIXED
-      image: resizedImage,                 // FIXED
-    });
-
-    if (data.status) {
-      dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
-
-      dispatch({
-        type: reducerCases.SET_USER_INFO,
-        userInfo: {
-          name,
+  const onBoardUser = async () => {
+    if (validateDetails()) {
+      const email = userInfo?.email;
+      try {
+        const base64Response = await fetch(`${image}`);
+        const blob = await base64Response.blob();
+        setImage(await resizeFile(blob));
+        const { data } = await axios.post(onBoardUserRoute, {
           email,
-          profileImage: resizedImage,
-          status: about,
+          name,
+          about,
+          
+      firebaseUid: userInfo.firebaseUid,   // FIXED
+          image,
+        });
+        if (data.status) {
+          dispatch({ type: reducerCases.SET_NEW_USER, newUser: false });
+          dispatch({
+            type: reducerCases.SET_USER_INFO,
+            userInfo: {
+              name,
+              email,
+              
           firebaseUid: userInfo.firebaseUid,
-        },
-      });
+              profileImage: image,
+              status: about,
+            },
+          });
 
-      router.push("/");
+          router.push("/");
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
+  };
 
   const validateDetails = () => {
     if (name.length < 3) {
