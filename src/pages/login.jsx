@@ -20,8 +20,9 @@ export default function Login() {
 
   const login = async () => {
     const provider = new GoogleAuthProvider();
+
     const {
-      user: { displayName: name, email, photoURL: profileImage },
+      user: { displayName: name, email, photoURL: profileImage, uid },
     } = await signInWithPopup(firebaseAuth, provider);
 
     try {
@@ -38,31 +39,29 @@ export default function Login() {
               email,
               profileImage,
               status: "Available",
+              firebaseUid: uid,     // FIXED: Store UID
             },
           });
 
-          // Delay ensures localStorage isn't interrupted by navigation
           setTimeout(() => {
             router.push("/onboarding");
           }, 100);
         } else {
           // Existing user
-          localStorage.setItem("userId", data.data.id); // ✅ Ensures it's written before navigating
+          localStorage.setItem("userId", data.data.id);
 
           dispatch({
             type: reducerCases.SET_USER_INFO,
             userInfo: {
               id: data.data.id,
-              
-    firebaseUid: uid,      // save it
               email: data.data.email,
               name: data.data.name,
               profileImage: data.data.profilePicture,
               status: data.data.about,
+              firebaseUid: data.data.firebaseUid, // FIXED: Keep existing uid
             },
           });
 
-          // Delay router push to ensure localStorage is written
           setTimeout(() => {
             router.push("/");
           }, 100);
