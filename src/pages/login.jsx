@@ -53,6 +53,8 @@ export default function Login() {
             type: reducerCases.SET_USER_INFO,
             userInfo: {
               id: data.data.id,
+              
+    firebaseUid: uid,      // save it
               email: data.data.email,
               name: data.data.name,
               profileImage: data.data.profilePicture,

@@ -52,6 +52,8 @@ export default function OnBoarding() {
           email,
           name,
           about,
+          
+  firebaseUid: userInfo.firebaseUid,
           image,
         });
         if (data.status) {
@@ -63,6 +65,8 @@ export default function OnBoarding() {
               email,
               profileImage: image,
               status: about,
+              
+    firebaseUid: uid,  
             },
           });
 
