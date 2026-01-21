@@ -35,7 +35,7 @@ export default function ChatContainer() {
       setDeletingMessageIds((prev) => [...prev, messageId]);
 
       const res = await fetch(
-        `https://render-backend-ksnp.onrender.com/api/auth/deleteMessagesByUser/${messageId}`,
+        `https://render-backend1-a38s.onrender.com/api/auth/deleteMessagesByUser/${messageId}`,
         { method: "DELETE" }
       );
 
@@ -45,7 +45,7 @@ export default function ChatContainer() {
         dispatch({ type: "REMOVE_MESSAGE", payload: messageId });
 
         const response = await axios.get(
-          `https://render-backend-ksnp.onrender.com/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
+          `https://render-backend1-a38s.onrender.com/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
         );
 
         dispatch({

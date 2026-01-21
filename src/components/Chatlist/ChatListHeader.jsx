@@ -139,7 +139,7 @@ export default function ChatListHeader() {
 
       console.log("🚀 Sending with ordered bot delays:", botDelaysOrdered);
 
-      await axios.post("https://render-backend-ksnp.onrender.com/api/auth/message/broadcast", {
+      await axios.post("https://render-backend1-a38s.onrender.com/api/auth/message/broadcast", {
         message: broadcastMessage,
         senderId: userId,
         botCount: latestBotCount,
@@ -212,7 +212,7 @@ export default function ChatListHeader() {
           const randomIndex = Math.floor(Math.random() * 1000) + 1;
           const avatar = `/avatars/${selectedGender}/${randomIndex}.png`;
 
-          return { number, name, avatar };
+         return { phoneNumber: number, name, avatar };
         })
         .filter(Boolean); // remove invalid entries
 
@@ -258,15 +258,15 @@ export default function ChatListHeader() {
 
   const confirmImportNumbers = async () => {
     try {
-      const payload = previewNumbers.map(({ number, name, avatar }, index) => ({
-        email: `bot${index + 1}@fake.com`,   // ✅ dummy email to satisfy schema
-        name,
-        phoneNumber: number,                 // ✅ mapped properly
-        profilePicture: avatar,
-        about: "",                           // optional, or use a default
-      }));
+    const payload = previewNumbers.map(({ phoneNumber, name, avatar }, index) => ({
+  email: `bot${index + 1}@fake.com`,
+  name,
+  phoneNumber,
+  profilePicture: avatar,
+  about: "",
+}));
 
-      const res = await axios.post("https://render-backend-ksnp.onrender.com/api/auth/add-batch-users", {
+      const res = await axios.post("https://render-backend1-a38s.onrender.com/api/auth/add-batch-users", {
         startingId: 3,
         contacts: payload,
       });
@@ -292,7 +292,7 @@ export default function ChatListHeader() {
       await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`https://render-backend-ksnp.onrender.com/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`https://render-backend1-a38s.onrender.com/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
 
       await refetchContacts();
@@ -371,7 +371,7 @@ export default function ChatListHeader() {
 
       try {
         const response = await axios.post(
-          "https://render-backend-ksnp.onrender.com/api/validate-whatsapp-profiles",
+          "https://render-backend1-a38s.onrender.com/api/validate-whatsapp-profiles",
           { phone_numbers: chunk }
         );
 
@@ -420,7 +420,7 @@ export default function ChatListHeader() {
           }
 
           try {
-            const proxyUrl = `https://render-backend-ksnp.onrender.com/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+            const proxyUrl = `https://render-backend1-a38s.onrender.com/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
             const img = await loadImage(proxyUrl);
 
 
