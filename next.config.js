@@ -6,7 +6,7 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["render-backend-ksnp.onrender.com"],
+    domains: ["render-backend1-a38s.onrender.com"],
   },
 };
 
