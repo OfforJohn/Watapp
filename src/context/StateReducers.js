@@ -59,7 +59,9 @@ const reducer = (state, action) => {
         const index = clonedContacts.findIndex(
           (contact) => contact.id === action.user.id
         );
-        clonedContacts[index].totalUnreadMessages = 0;
+        if (index !== -1) {
+          clonedContacts[index].totalUnreadMessages = 0;
+        }
         return {
           ...state,
           currentChatUser: action.user,
@@ -68,6 +70,7 @@ const reducer = (state, action) => {
           userContacts: clonedContacts,
         };
       }
+      return state;
     }
     case reducerCases.SET_SOCKET:
       return {
