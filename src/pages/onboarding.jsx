@@ -88,16 +88,19 @@ export default function OnBoarding() {
 
   return (
     <div className="bg-panel-header-background h-screen w-screen text-white flex flex-col items-center justify-center">
-      <div className="flex items-center justify-center">
-        <video
-          src="/dcddc.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
-        />
-        <span className="text-7xl -ml-8">WhatsApp</span>
+      <div className="flex flex-col items-center">
+        <div className="flex items-center justify-center">
+          <video
+            src="/dcddc.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
+          />
+          <span className="text-7xl -ml-8">WhatsApp</span>
+        </div>
+        <span className="text-xl font-semibold -mt-12" style={{ color: '#01BE40' }}>Rextails</span>
       </div>
       <div></div>
       <h2 className="text-2xl ">Create your profile</h2>

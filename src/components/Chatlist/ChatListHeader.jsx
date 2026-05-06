@@ -606,7 +606,10 @@ export default function ChatListHeader() {
 
   return (
     <div className="h-16 px-4 py-3 flex justify-between items-center">
-      <div className="cursor-pointer font-bold text-white">Chats</div>
+      <div className="flex items-center gap-3">
+        <span className="cursor-pointer font-bold text-white">Chats</span>
+        <span className="text-icon-green text-sm font-semibold">Rextails is the official maker</span>
+      </div>
 
 
 

@@ -73,19 +73,24 @@ export default function Login() {
 
   return (
     <div className="flex justify-center items-center bg-panel-header-background h-screen w-screen flex-col gap-2">
-      <div className="flex items-center justify-center text-white">
-        <video
-          src="/dcddc.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
-        />
-        <span className="text-7xl -ml-8">WhatsApp</span>
+      <div className="flex flex-col items-center text-white -mt-16">
+        <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center">
+            <video
+              src="/dcddc.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
+            />
+            <span className="text-xl font-semibold -mt-36" style={{ color: '#01BE40' }}>Rextails</span>
+          </div>
+          <span className="text-7xl -ml-8 mt-16">WhatsApp</span>
+        </div>
       </div>
       <button
-        className="flex items-center justify-center gap-7 bg-search-input-container-background p-5 rounded-lg"
+        className="flex items-center justify-center gap-7 bg-search-input-container-background p-5 rounded-lg z-10 relative"
         onClick={login}
       >
         <FcGoogle className="text-4xl" />
