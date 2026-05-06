@@ -100,7 +100,7 @@ export default function OnBoarding() {
           />
           <span className="text-7xl -ml-8">WhatsApp</span>
         </div>
-        <span className="text-xl font-semibold -mt-12" style={{ color: '#01BE40' }}>Rextails</span>
+        <span className="text-xl font-semibold -mt-12" style={{ color: '#20d360' }}>Rextails</span>
       </div>
       <div></div>
       <h2 className="text-2xl ">Create your profile</h2>

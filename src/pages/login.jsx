@@ -84,9 +84,9 @@ export default function Login() {
               playsInline
               style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
             />
-            <span className="text-xl font-semibold -mt-36" style={{ color: '#01BE40' }}>Rextails</span>
+            <span className="text-xl font-semibold -mt-36" style={{ color: '#20d360' }}>Rextails</span>
           </div>
-          <span className="text-7xl -ml-8 mt-16">WhatsApp</span>
+          <span className="text-7xl -ml-8 mt-8">WhatsApp</span>
         </div>
       </div>
       <button
