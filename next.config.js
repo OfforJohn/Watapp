@@ -6,7 +6,7 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["render-backend1-a38s.onrender.com"],
+    domains: ["render-backend1-a38s.onrender.com", "cdn.discordapp.com"],
   },
 };
 
