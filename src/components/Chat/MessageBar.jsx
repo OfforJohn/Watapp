@@ -20,13 +20,28 @@ export default function MessageBar() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const [grabImage, setGrabImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isSending, setIsSending] = useState(false);
 
   const photoPickerOnChange = async (e) => {
     const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
+  const sendImage = async () => {
+    if (!selectedFile || isSending) return;
+    setIsSending(true);
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("image", selectedFile);
       const response = await axios.post(ADD_IMAGE_MESSAGE_ROUTE, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -50,13 +65,24 @@ export default function MessageBar() {
           fromSelf: true,
         });
       }
+      cancelImagePreview();
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsSending(false);
     }
+  };
+
+  const isVideoFile = selectedFile?.type?.startsWith('video/');
+
+  const cancelImagePreview = () => {
+    setImagePreview(null);
+    setSelectedFile(null);
   };
 
   const [{ socket, currentChatUser, userInfo }, dispatch] = useStateProvider();
   const sendMessage = async () => {
+    if (!message.trim()) return;
     try {
       setMessage("");
       const { data } = await axios.post(ADD_MESSAGE_ROUTE, {
@@ -78,6 +104,13 @@ export default function MessageBar() {
       });
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
@@ -158,6 +191,7 @@ export default function MessageBar() {
               className="bg-input-background text-sm focus:outline-none text-white h-10 rounded-lg pl-5 pr-5 py-4 w-full"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
           </div>
           <div className=" w-10 flex items-center justify-center">
@@ -180,6 +214,55 @@ export default function MessageBar() {
       )}
       {showAudioRecorder && <CaptureAudio hide={setShowAudioRecorder} />}
       {grabImage && <PhotoPicker onChange={photoPickerOnChange} />}
+      
+      {/* Image/Video Preview Modal */}
+      {imagePreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="bg-panel-header-background rounded-lg p-4 max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white text-lg">{isVideoFile ? 'Send Video' : 'Send Image'}</span>
+              <button
+                onClick={cancelImagePreview}
+                disabled={isSending}
+                className="text-gray-400 hover:text-white text-2xl disabled:opacity-50"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="flex justify-center mb-4">
+              {isVideoFile ? (
+                <video
+                  src={imagePreview}
+                  controls
+                  className="max-h-80 rounded-lg"
+                />
+              ) : (
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="max-h-80 rounded-lg object-contain"
+                />
+              )}
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={cancelImagePreview}
+                disabled={isSending}
+                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={sendImage}
+                disabled={isSending}
+                className="px-4 py-2 text-white bg-[#00a884] rounded-lg hover:bg-[#06cf9c] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MdSend /> {isSending ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

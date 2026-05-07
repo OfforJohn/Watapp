@@ -107,29 +107,32 @@ export default function ChatContainer() {
                   />
                 )}
 
-                <div
-                  className={`text-white px-3 py-2 text-sm rounded-md flex gap-2 items-end max-w-[45%] break-all ${
-                    message.senderId === currentChatUser.id
-                      ? "bg-incoming-background"
-                      : "bg-outgoing-background"
-                  }`}
-                >
-                  {message.type === "text" && (
-                    <>
-                      <span>{message.message}</span>
-                      <div className="flex gap-1 items-end">
-                        <span className="text-bubble-meta text-[11px] pt-1 min-w-fit">
-                          {calculateTime(message.createdAt)}
-                        </span>
-                        {message.senderId === userInfo.id && (
-                          <MessageStatus messageStatus={message.messageStatus} />
-                        )}
-                      </div>
-                    </>
-                  )}
-                  {message.type === "image" && <ImageMessage message={message} />}
-                  {message.type === "audio" && <VoiceMessage message={message} />}
-                </div>
+                {message.type === "image" ? (
+                  <ImageMessage message={message} />
+                ) : (
+                  <div
+                    className={`text-white px-3 py-2 text-sm rounded-md flex gap-2 items-end max-w-[45%] break-all ${
+                      message.senderId === currentChatUser.id
+                        ? "bg-incoming-background"
+                        : "bg-outgoing-background"
+                    }`}
+                  >
+                    {message.type === "text" && (
+                      <>
+                        <span>{message.message}</span>
+                        <div className="flex gap-1 items-end">
+                          <span className="text-bubble-meta text-[11px] pt-1 min-w-fit">
+                            {calculateTime(message.createdAt)}
+                          </span>
+                          {message.senderId === userInfo.id && (
+                            <MessageStatus messageStatus={message.messageStatus} />
+                          )}
+                        </div>
+                      </>
+                    )}
+                    {message.type === "audio" && <VoiceMessage message={message} />}
+                  </div>
+                )}
               </div>
             ))}
         </div>
