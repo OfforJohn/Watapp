@@ -65,7 +65,7 @@ export default function ChatHeader() {
         <div className="flex flex-col">
           <span className="text-primary-strong">{currentChatUser?.name}</span>
           <span className="text-secondary text-sm">
-            {onlineUsers.includes(currentChatUser.id) ? "" : ""}
+            {onlineUsers?.includes(currentChatUser?.id) ? "" : ""}
           </span>
         </div>
       </div>

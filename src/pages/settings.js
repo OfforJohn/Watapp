@@ -72,7 +72,10 @@ export default function SettingsPage() {
     
             />
 
-            <button className="flex items-center space-x-3 text-red-500 hover:underline mt-6">
+            <button 
+              onClick={() => router.push("/logout")}
+              className="flex items-center space-x-3 text-red-500 hover:underline mt-6"
+            >
               <FiLogOut />
               <span>Log out</span>
             </button>

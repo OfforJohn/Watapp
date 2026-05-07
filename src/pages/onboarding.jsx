@@ -88,37 +88,39 @@ export default function OnBoarding() {
 
   return (
     <div className="bg-panel-header-background h-screen w-screen text-white flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center">
-        <div className="flex items-center justify-center">
+      <div className="flex flex-col items-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-2">
           <video
             src="/dcddc.mp4"
             autoPlay
             loop
             muted
             playsInline
-            style={{ height: 450, width: 450, mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
+            className="h-16 w-16"
+            style={{ mixBlendMode: 'screen', filter: 'contrast(1.1) brightness(1.1)' }}
           />
-          <span className="text-7xl -ml-8">WhatsApp</span>
+          <span className="text-4xl font-light">WhatsApp</span>
         </div>
-        <span className="text-xl font-semibold -mt-12" style={{ color: '#20d360' }}>Rextails</span>
+        <span className="text-sm font-semibold" style={{ color: '#20d360' }}>Rextails</span>
       </div>
-      <div></div>
-      <h2 className="text-2xl ">Create your profile</h2>
-      <div className="flex gap-6 mt-6 ">
-        <div className="flex flex-col items-center justify-between mt-5 gap-6">
-          <Input name="Display Name" state={name} setState={setName} label />
-          <Input name="About" state={about} setState={setAbout} label />
-          <div className="flex items-center justify-center">
-            <button
-              className="bg-search-input-container-background p-5 rounded-lg"
-              onClick={onBoardUser}
-            >
-              Create Profile
-            </button>
-          </div>
-        </div>
-        <div>
+
+      <div className="bg-[#202c33] p-8 rounded-xl shadow-lg max-w-md w-full mx-4">
+        <h2 className="text-2xl text-center mb-6">Create your profile</h2>
+        
+        <div className="flex flex-col items-center gap-6">
           <Avatar type="xl" image={image} setImage={setImage} />
+          
+          <div className="w-full flex flex-col gap-4">
+            <Input name="Display Name" state={name} setState={setName} label />
+            <Input name="About" state={about} setState={setAbout} label />
+          </div>
+          
+          <button
+            className="w-full bg-[#00a884] hover:bg-[#06cf9c] transition-colors py-3 px-6 rounded-lg font-medium mt-2"
+            onClick={onBoardUser}
+          >
+            Create Profile
+          </button>
         </div>
       </div>
     </div>
