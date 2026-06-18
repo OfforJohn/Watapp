@@ -5,7 +5,7 @@ import { useStateProvider } from "@/context/StateContext";
 import { useRouter } from "next/router";
 
 import { FaKey, FaLock, FaBell, FaKeyboard, FaQuestionCircle } from "react-icons/fa";
-import { MdChat } from "react-icons/md";
+import { MdChat, MdPersonSearch } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import { CiSettings } from "react-icons/ci";
 
@@ -70,6 +70,12 @@ export default function SettingsPage() {
               label="Help"
               desc="Help center, contact us, privacy policy"
     
+            />
+            <SettingItem
+              icon={<MdPersonSearch />}
+              label="Profile Lookup"
+              desc="Batch lookup WhatsApp profiles"
+              href="/whatsapp-profiles"
             />
 
             <button 

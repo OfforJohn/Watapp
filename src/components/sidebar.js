@@ -8,6 +8,7 @@ import { BsChatLeftText, BsChatText } from "react-icons/bs";
 import { CiSettings } from "react-icons/ci";
 import { IoIosPeople } from "react-icons/io";
 import { TbChartDonut3 } from "react-icons/tb";
+import { MdPersonSearch } from "react-icons/md";
 
 export default function Sidebar({ navOpen = true }) {
   const [{ userInfo }] = useStateProvider();
@@ -44,6 +45,14 @@ export default function Sidebar({ navOpen = true }) {
         >
           <IoIosPeople size={29} className="text-gray-300" />
           {navOpen && <span>Contacts</span>}
+        </button>
+
+        <button
+          onClick={() => router.push("/whatsapp-profiles")}
+          className="flex items-center w-full space-x-3 px-4 py-2 text-white hover:text-emerald-400"
+        >
+          <MdPersonSearch size={27} className="text-gray-300" />
+          {navOpen && <span>Profile Lookup</span>}
         </button>
 
         <hr className="border-t border-gray-500 my-2 w-11" />
