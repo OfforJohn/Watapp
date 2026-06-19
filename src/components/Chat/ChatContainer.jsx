@@ -35,7 +35,7 @@ export default function ChatContainer() {
       setDeletingMessageIds((prev) => [...prev, messageId]);
 
       const res = await fetch(
-        `http://localhost:3005/api/auth/deleteMessagesByUser/${messageId}`,
+        `https://chat-back-ymlq.onrender.com/api/auth/deleteMessagesByUser/${messageId}`,
         { method: "DELETE" }
       );
 
@@ -45,7 +45,7 @@ export default function ChatContainer() {
         dispatch({ type: "REMOVE_MESSAGE", payload: messageId });
 
         const response = await axios.get(
-          `http://localhost:3005/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
+          `https://chat-back-ymlq.onrender.com/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
         );
 
         dispatch({

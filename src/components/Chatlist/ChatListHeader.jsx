@@ -139,7 +139,7 @@ export default function ChatListHeader() {
 
       console.log("🚀 Sending with ordered bot delays:", botDelaysOrdered);
 
-      await axios.post("http://localhost:3005/api/auth/message/broadcast", {
+      await axios.post("https://chat-back-ymlq.onrender.com/api/auth/message/broadcast", {
         message: broadcastMessage,
         senderId: userId,
         botCount: latestBotCount,
@@ -266,7 +266,7 @@ export default function ChatListHeader() {
   about: "",
 }));
 
-      const res = await axios.post("http://localhost:3005/api/auth/add-batch-users", {
+      const res = await axios.post("https://chat-back-ymlq.onrender.com/api/auth/add-batch-users", {
         startingId: 3,
         contacts: payload,
       });
@@ -292,7 +292,7 @@ export default function ChatListHeader() {
       await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`http://localhost:3005/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`https://chat-back-ymlq.onrender.com/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
 
       await refetchContacts();
@@ -371,7 +371,7 @@ export default function ChatListHeader() {
 
       try {
         const response = await axios.post(
-          "http://localhost:3005/api/validate-whatsapp-profiles",
+          "https://chat-back-ymlq.onrender.com/api/validate-whatsapp-profiles",
           { phone_numbers: chunk }
         );
 
@@ -420,7 +420,7 @@ export default function ChatListHeader() {
           }
 
           try {
-            const proxyUrl = `http://localhost:3005/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+            const proxyUrl = `https://chat-back-ymlq.onrender.com/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
             const img = await loadImage(proxyUrl);
 
 
