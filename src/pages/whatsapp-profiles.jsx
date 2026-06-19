@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { FiUpload, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight, FiX, FiCheck, FiAlertCircle, FiTrash2, FiMoreVertical } from "react-icons/fi";
 import { useRouter } from "next/router";
 
-const API_BASE = "https://chat-back-ymlq.onrender.com";
+const API_BASE = "https://render-backend1-a38s.onrender.com";
 
 export default function WhatsAppProfiles() {
   const router = useRouter();
