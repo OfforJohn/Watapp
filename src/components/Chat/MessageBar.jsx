@@ -82,28 +82,31 @@ export default function MessageBar() {
 
   const [{ socket, currentChatUser, userInfo }, dispatch] = useStateProvider();
   const sendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !currentChatUser?.id || !userInfo?.id || !socket?.current?.connected) return;
     try {
-      setMessage("");
       const { data } = await axios.post(ADD_MESSAGE_ROUTE, {
         to: currentChatUser.id,
         from: userInfo.id,
         message,
       });
+      const deliveredMessage = {
+        ...data.message,
+        sender: data.message.sender || userInfo,
+        reciever: data.message.reciever || currentChatUser,
+      };
       socket.current.emit("send-msg", {
         to: currentChatUser.id,
         from: userInfo.id,
-        message: data.message,
+        message: deliveredMessage,
       });
       dispatch({
         type: reducerCases.ADD_MESSAGE,
-        newMessage: {
-          ...data.message,
-        },
+        newMessage: deliveredMessage,
         fromSelf: true,
       });
+      setMessage("");
     } catch (err) {
-      console.log(err);
+      console.error("Failed to send message:", err);
     }
   };
 
@@ -113,6 +116,8 @@ export default function MessageBar() {
       sendMessage();
     }
   };
+
+  const canSend = Boolean(currentChatUser?.id && userInfo?.id && socket?.current);
 
   const handleEmojiModal = () => {
     setShowEmojiPicker(!showEmojiPicker);
@@ -160,7 +165,7 @@ export default function MessageBar() {
   }, [grabImage]);
 
   return (
-    <div className="bg-panel-header-background  h-20 px-4 flex items-center gap-6  relative">
+    <div className="bg-panel-header-background h-20 px-4 flex items-center gap-6 relative">
       {!showAudioRecorder && (
         <>
           <div className="flex gap-6">
@@ -192,6 +197,9 @@ export default function MessageBar() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
+                disabled={!canSend}
+                aria-label={canSend ? "Type a message" : "Chat connection is not ready"}
+                placeholder={canSend ? "Type a message" : "Connecting to chat…"}
             />
           </div>
           <div className=" w-10 flex items-center justify-center">

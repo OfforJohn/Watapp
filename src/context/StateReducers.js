@@ -79,18 +79,18 @@ const reducer = (state, action) => {
       };
     case reducerCases.ADD_MESSAGE: {
       if (
-        state.currentChatUser?.id === action.newMessage.senderId ||
+        String(state.currentChatUser?.id) === String(action.newMessage.senderId) ||
         action?.fromSelf
       ) {
-        state.socket.current.emit("mark-read", {
+        state.socket?.current?.emit("mark-read", {
           id: action.newMessage.senderId,
           recieverId: action.newMessage.recieverId,
         });
 
         const clonedContacts = [...state.userContacts];
-        if (action.newMessage.recieverId === state.userInfo.id) {
+        if (String(action.newMessage.recieverId) === String(state.userInfo?.id)) {
           const index = clonedContacts.findIndex(
-            (contact) => contact.id === action.newMessage.senderId
+            (contact) => String(contact.id) === String(action.newMessage.senderId)
           );
           if (index !== -1) {
             const data = clonedContacts[index];
@@ -110,7 +110,7 @@ const reducer = (state, action) => {
           };
         } else {
           const index = clonedContacts.findIndex(
-            (contact) => contact.id === action.newMessage.recieverId
+            (contact) => String(contact.id) === String(action.newMessage.recieverId)
           );
           if (index !== -1) {
             const data = clonedContacts[index];
@@ -156,7 +156,7 @@ const reducer = (state, action) => {
       } else {
         const clonedContacts = [...state.userContacts];
         const index = clonedContacts.findIndex(
-          (contact) => contact.id === action.newMessage.senderId
+          (contact) => String(contact.id) === String(action.newMessage.senderId)
         );
         if (index !== -1) {
           const data = clonedContacts[index];

@@ -6,7 +6,24 @@ const nextConfig = {
   },
   reactStrictMode: false,
   images: {
-    domains: ["localhost"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "render-backend1-a38s.onrender.com",
+        pathname: "/uploads/**",
+      },
+      {
+        protocol: "https",
+        hostname: "render-backend1-a38s.onrender.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3005",
+        pathname: "/uploads/**",
+      },
+    ],
   },
 };
 

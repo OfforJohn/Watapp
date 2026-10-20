@@ -6,6 +6,8 @@ const MESSAGES_ROUTE = `${HOST}/api/messages`;
 export const onBoardUserRoute = `${authRoute}/onboarduser`;
 export const CHECK_USER_ROUTE = `${authRoute}/check-user`;
 export const GET_ALL_CONTACTS = `${authRoute}/get-contacts`;
+export const SEARCH_USERS_ROUTE = `${authRoute}/search-users`;
+export const UPDATE_GUEST_PROFILE_ROUTE = (userId) => `${authRoute}/guest-profile/${userId}`;
 export const GET_CALL_TOKEN = `${authRoute}/generate-token`;
 
 export const ADD_MESSAGE_ROUTE = `${MESSAGES_ROUTE}/add-message`;

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { BsFillChatLeftTextFill, BsThreeDotsVertical } from "react-icons/bs";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { FiPlus } from "react-icons/fi";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import { useRouter } from "next/router";
@@ -8,7 +9,7 @@ import ContextMenu from "../common/ContextMenu";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-import { GET_INITIAL_CONTACTS_ROUTE } from "@/utils/ApiRoutes";
+import { GET_INITIAL_CONTACTS_ROUTE, HOST } from "@/utils/ApiRoutes";
 import { useRef, useEffect } from "react";
 
 
@@ -139,7 +140,7 @@ export default function ChatListHeader() {
 
       console.log("🚀 Sending with ordered bot delays:", botDelaysOrdered);
 
-      await axios.post("https://render-backend1-a38s.onrender.com/api/auth/message/broadcast", {
+      await axios.post(`${HOST}/api/auth/message/broadcast`, {
         message: broadcastMessage,
         senderId: userId,
         botCount: latestBotCount,
@@ -266,7 +267,7 @@ export default function ChatListHeader() {
   about: "",
 }));
 
-      const res = await axios.post("https://render-backend1-a38s.onrender.com/api/auth/add-batch-users", {
+      const res = await axios.post(`${HOST}/api/auth/add-batch-users`, {
         startingId: 3,
         contacts: payload,
       });
@@ -292,7 +293,7 @@ export default function ChatListHeader() {
       await refetchContacts();
       setIsContextMenuVisible(false);
       const startId = 3;
-      const res = await axios.delete(`https://render-backend1-a38s.onrender.com/api/auth/delete-batch-users/${startId}`);
+      const res = await axios.delete(`${HOST}/api/auth/delete-batch-users/${startId}`);
       toast.success(res.data.message || "Users deleted successfully");
 
       await refetchContacts();
@@ -371,7 +372,7 @@ export default function ChatListHeader() {
 
       try {
         const response = await axios.post(
-          "https://render-backend1-a38s.onrender.com/api/validate-whatsapp-profiles",
+          `${HOST}/api/validate-whatsapp-profiles`,
           { phone_numbers: chunk }
         );
 
@@ -420,7 +421,7 @@ export default function ChatListHeader() {
           }
 
           try {
-            const proxyUrl = `https://render-backend1-a38s.onrender.com/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+            const proxyUrl = `${HOST}/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
             const img = await loadImage(proxyUrl);
 
 
@@ -605,17 +606,16 @@ export default function ChatListHeader() {
 
 
   return (
-    <div className="h-16 px-4 py-3 flex justify-between items-center">
+    <div className="chat-list-header h-16 px-4 py-3 flex justify-between items-center">
       <div className="flex items-center gap-3">
-        <span className="cursor-pointer font-bold text-white">Chats</span>
-        <span className="text-icon-green text-sm font-semibold">Rextails is the official maker</span>
+        <span className="cursor-pointer font-bold text-white text-2xl">Chats</span>
       </div>
 
 
 
-      <div className="flex gap-6">
-        <BsFillChatLeftTextFill
-          className="text-panel-header-icon cursor-pointer text-xl"
+      <div className="flex items-center gap-5">
+        <FiPlus
+          className="chat-new-button text-panel-header-icon cursor-pointer text-xl"
           title="New chat"
           onClick={handleAllContactsPage}
         />

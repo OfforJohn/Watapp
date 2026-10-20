@@ -3,8 +3,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { FiUpload, FiSearch, FiRefreshCw, FiChevronLeft, FiChevronRight, FiX, FiCheck, FiAlertCircle, FiTrash2, FiMoreVertical } from "react-icons/fi";
 import { useRouter } from "next/router";
+import { HOST } from "@/utils/ApiRoutes";
 
-const API_BASE = "https://render-backend1-a38s.onrender.com";
+const API_BASE = HOST;
 
 export default function WhatsAppProfiles() {
   const router = useRouter();

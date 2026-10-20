@@ -8,16 +8,17 @@ import { FiLogOut } from "react-icons/fi";
 
 export default function AccountSettings() {
   const [{ userInfo }] = useStateProvider();
+  const router = useRouter();
 
   return (
-    <div className="flex h-screen bg-[#f0f2f5]">
+    <div className="settings-theme flex h-screen">
       {/* Sidebar icons */}
       <Sidebar navOpen={false} />
 
       {/* Full settings layout */}
       <div className="ml-16 flex w-full">
         {/* Left menu */}
-        <div className="w-[320px] bg-white h-full border-r border-gray-300 p-5 overflow-y-auto">
+        <div className="settings-menu-panel w-[320px] h-full border-r border-gray-300 p-5 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-4">Settings</h2>
 
           {/* Profile Section */}
@@ -32,7 +33,7 @@ export default function AccountSettings() {
           {/* Settings Nav */}
           <div className="space-y-4">
             <SettingItem label="Account" href="/settings/account" active />
-            <button className="flex items-center space-x-3 text-red-500 hover:underline mt-6">
+            <button onClick={() => router.push("/logout")} className="flex items-center space-x-3 text-red-500 hover:underline mt-6">
               <FiLogOut />
               <span>Log out</span>
             </button>
@@ -40,10 +41,10 @@ export default function AccountSettings() {
         </div>
 
         {/* Right side content */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div className="settings-content-panel flex-1 p-8 overflow-y-auto">
           <h1 className="text-2xl font-semibold text-gray-800 mb-6">Account Settings</h1>
 
-          <div className="bg-white shadow-sm rounded-lg p-6 space-y-4">
+          <div className="settings-card shadow-sm rounded-lg p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Email</label>
               <p className="text-gray-800 mt-1">{userInfo?.email || "+234 123 456 7890"}</p>

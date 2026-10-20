@@ -28,7 +28,7 @@ export default function SearchBar() {
         </div>
       </div>
       <div className="pr-5 pl-3">
-        <BiFilter className="text-panel-header-icon cursor-pointer text-xl " />
+        <BiFilter className="text-panel-header-icon cursor-pointer text-xl" />
       </div>
     </div>
   );

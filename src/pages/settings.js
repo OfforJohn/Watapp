@@ -3,6 +3,7 @@ import Sidebar from "@/components/sidebar";
 import Avatar from "@/components/common/Avatar";
 import { useStateProvider } from "@/context/StateContext";
 import { useRouter } from "next/router";
+import { useState } from "react";
 
 import { FaKey, FaLock, FaBell, FaKeyboard, FaQuestionCircle } from "react-icons/fa";
 import { MdChat, MdPersonSearch } from "react-icons/md";
@@ -12,16 +13,24 @@ import { CiSettings } from "react-icons/ci";
 export default function SettingsPage() {
   const [{ userInfo }] = useStateProvider();
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState("Settings");
+  const sectionDescriptions = {
+    Privacy: "Privacy controls for blocked contacts and disappearing messages will be available here.",
+    Chats: "Return to your chats and manage chat-related preferences.",
+    Notifications: "Message and call notification preferences will be available here.",
+    "Keyboard shortcuts": "Keyboard shortcuts will be listed here as they are added to Rextails.",
+    Help: "Help and support information will be available here.",
+  };
 
   return (
-    <div className="flex h-screen bg-[#f0f2f5]">
+    <div className="settings-theme flex h-screen">
       {/* Sidebar with icons only */}
       <Sidebar navOpen={false} />
 
       {/* Settings Panels */}
       <div className="ml-16 flex w-full">
         {/* Left Settings Menu */}
-        <div className="w-[320px] bg-white h-full border-r border-gray-300 p-5 overflow-y-auto">
+        <div className="settings-menu-panel w-[320px] h-full border-r border-gray-300 p-5 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-4">Settings</h2>
 
           {/* Profile */}
@@ -45,31 +54,31 @@ export default function SettingsPage() {
               icon={<FaLock />}
               label="Privacy"
               desc="Blocked contacts, disappearing messages"
-            
+              onSelect={setActiveSection}
             />
             <SettingItem
               icon={<MdChat />}
               label="Chats"
               desc="Theme, wallpaper, chat settings"
-            
+              onSelect={() => router.push("/")}
             />
             <SettingItem
               icon={<FaBell />}
               label="Notifications"
               desc="Message notifications"
-
+              onSelect={setActiveSection}
             />
             <SettingItem
               icon={<FaKeyboard />}
               label="Keyboard shortcuts"
               desc="Quick actions"
-              
+              onSelect={setActiveSection}
             />
             <SettingItem
               icon={<FaQuestionCircle />}
               label="Help"
               desc="Help center, contact us, privacy policy"
-    
+              onSelect={setActiveSection}
             />
             <SettingItem
               icon={<MdPersonSearch />}
@@ -89,9 +98,14 @@ export default function SettingsPage() {
         </div>
 
         {/* Right Settings View */}
-        <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-600">
+        <div className="settings-content-panel flex-1 flex flex-col items-center justify-center text-center text-gray-600 px-8">
           <CiSettings size={50} className="text-gray-400 mb-4" />
-          <h2 className="text-2xl font-medium">Settings</h2>
+          <h2 className="text-2xl font-medium">{activeSection}</h2>
+          {activeSection !== "Settings" && (
+            <p className="mt-3 max-w-md text-sm text-gray-400">
+              {sectionDescriptions[activeSection] || "Manage your Rextails preferences here."}
+            </p>
+          )}
         </div>
       </div>
     </div>
@@ -99,13 +113,15 @@ export default function SettingsPage() {
 }
 
 // Helper component for left menu items
-function SettingItem({ icon, label, desc, href }) {
+function SettingItem({ icon, label, desc, href, onSelect }) {
   const router = useRouter();
 
   return (
-    <div
-      onClick={() => router.push(href)}
-      className="hover:bg-gray-100 rounded-lg p-3 cursor-pointer transition-all"
+    <button
+      type="button"
+      onClick={() => (href ? router.push(href) : onSelect?.(label))}
+      className="settings-nav-item hover:bg-gray-100 rounded-lg p-3 cursor-pointer transition-all w-full text-left"
+      aria-label={`${label}: ${desc}`}
     >
       <div className="flex items-center space-x-3">
         <div className="text-gray-500">{icon}</div>
@@ -114,6 +130,6 @@ function SettingItem({ icon, label, desc, href }) {
           <p className="text-xs text-gray-500">{desc}</p>
         </div>
       </div>
-    </div>
+    </button>
   );
 }

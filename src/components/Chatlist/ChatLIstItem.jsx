@@ -6,8 +6,15 @@ import { BsCheckAll, BsCheckLg } from "react-icons/bs";
 import { FaCamera, FaMicrophone } from "react-icons/fa";
 import { calculateTime } from "@/utils/CalculateTime";
 import MessageStatus from "../common/MessageStatus";
+import { FiArchive, FiStar } from "react-icons/fi";
 
-export default function ChatLIstItem({ data, isContactPage = false }) {
+export default function ChatLIstItem({
+  data,
+  isContactPage = false,
+  isFavorite = false,
+  onToggleFavorite,
+  onToggleArchive,
+}) {
   const [{ userInfo, currentChatUser }, dispatch] = useStateProvider();
 
   const handleContactClick = () => {
@@ -51,7 +58,7 @@ export default function ChatLIstItem({ data, isContactPage = false }) {
   };
   return (
     <div
-      className={`flex cursor-pointer items-center ${
+      className={`chat-contact-row group relative flex cursor-pointer items-center ${
         currentChatUser?.id === data.id && !isContactPage
           ? "bg-background-default-hover"
           : "hover:bg-background-default-hover"
@@ -82,9 +89,15 @@ export default function ChatLIstItem({ data, isContactPage = false }) {
         </div>
         <div className="flex border-b border-conversation-border pb-2 pt-1 pr-2">
           <div className="flex justify-between w-full">
-            <span className="text-secondary line-clamp-1 text-sm ">
+            <span className="text-secondary line-clamp-1 text-sm">
               {isContactPage ? (
-                data?.about || "\u00A0"
+                <span className="flex flex-col gap-1">
+                  <span>{data?.about || "Available"}</span>
+                  <span className="text-xs text-gray-400">
+                    {data?.handle ? `@${data.handle}` : `User ${data?.id}`}
+                    {data?.phoneNumber ? ` · ${data.phoneNumber}` : ""}
+                  </span>
+                </span>
               ) : (
                 <div className="flex items-center gap-1 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[200px] xl:max-w-[300px]">
                   {data.senderId === userInfo.id && (
@@ -116,6 +129,34 @@ export default function ChatLIstItem({ data, isContactPage = false }) {
           </div>
         </div>
       </div>
+      {!isContactPage && (onToggleFavorite || onToggleArchive) && (
+        <div className="chat-row-actions">
+          {onToggleFavorite && (
+            <button
+              type="button"
+              className={`chat-row-action ${isFavorite ? "is-favorite" : ""}`}
+              aria-label={isFavorite ? `Remove ${data?.name} from favorites` : `Add ${data?.name} to favorites`}
+              title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleFavorite(data.id);
+              }}
+            ><FiStar /></button>
+          )}
+          {onToggleArchive && (
+            <button
+              type="button"
+              className="chat-row-action"
+              aria-label={`Archive ${data?.name}`}
+              title="Archive chat"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleArchive(data.id);
+              }}
+            ><FiArchive /></button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

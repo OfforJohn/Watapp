@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { FiTrash2, FiEdit3, FiCheck, FiX } from "react-icons/fi";
+import { HOST } from "@/utils/ApiRoutes";
 
 export default function BotRepliesSettings() {
   const [replyInput, setReplyInput] = useState("");
@@ -33,7 +34,7 @@ export default function BotRepliesSettings() {
   // Fetch the replies and their delays from localStorage
   const fetchReplies = async () => {
     try {
-      const res = await axios.get("https://render-backend1-a38s.onrender.com/api/auth/get-replies");
+      const res = await axios.get(`${HOST}/api/auth/get-replies`);
       const replies = res.data.replies || [];
       setReplies(replies);
 
@@ -58,7 +59,7 @@ export default function BotRepliesSettings() {
     if (!replyInput.trim()) return;
     setLoading(true);
     try {
-      await axios.post("https://render-backend1-a38s.onrender.com/api/auth/add-reply", {
+      await axios.post(`${HOST}/api/auth/add-reply`, {
         content: replyInput,
       });
       setMessage("✅ Reply added!");
@@ -74,7 +75,7 @@ export default function BotRepliesSettings() {
 
 const handleDelete = async (id) => {
   try {
-    await axios.delete(`https://render-backend1-a38s.onrender.com/api/auth/delete-reply/${id}`);
+    await axios.delete(`${HOST}/api/auth/delete-reply/${id}`);
 
     // Remove the delay for the deleted reply
     localStorage.removeItem(`delay_${id}`);
@@ -95,7 +96,7 @@ const handleDelete = async (id) => {
 
   const handleEdit = async (id) => {
     try {
-      await axios.put(`https://render-backend1-a38s.onrender.com/api/auth/update-reply/${id}`, {
+      await axios.put(`${HOST}/api/auth/update-reply/${id}`, {
         content: editContent,
       });
       setEditId(null);

@@ -21,7 +21,7 @@ export default function OnBoarding() {
   const [about, setAbout] = useState("");
 
   useEffect(() => {
-    if (!newUser && !userInfo?.email) router.push("/login");
+    if (!newUser && !userInfo?.email) router.push("/");
     else if (!newUser && userInfo?.email) router.push("/");
   }, [newUser, userInfo, router]);
 

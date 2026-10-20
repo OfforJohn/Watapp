@@ -7,6 +7,7 @@ import ImageMessage from "./ImageMessage";
 import { reducerCases } from "@/context/constants";
 import { FaTrash } from "react-icons/fa";
 import axios from "axios";
+import { HOST } from "@/utils/ApiRoutes";
 
 const VoiceMessage = dynamic(() => import("@/components/Chat/VoiceMessage"), {
   ssr: false,
@@ -35,7 +36,7 @@ export default function ChatContainer() {
       setDeletingMessageIds((prev) => [...prev, messageId]);
 
       const res = await fetch(
-        `https://render-backend1-a38s.onrender.com/api/auth/deleteMessagesByUser/${messageId}`,
+        `${HOST}/api/auth/deleteMessagesByUser/${messageId}`,
         { method: "DELETE" }
       );
 
@@ -45,7 +46,7 @@ export default function ChatContainer() {
         dispatch({ type: "REMOVE_MESSAGE", payload: messageId });
 
         const response = await axios.get(
-          `https://render-backend1-a38s.onrender.com/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
+          `${HOST}/api/messages/get-messages/${userInfo.id}/${currentChatUser.id}`
         );
 
         dispatch({
@@ -78,6 +79,12 @@ export default function ChatContainer() {
       <div className="bg-chat-background bg-fixed h-full w-full opacity-5 fixed left-0 top-0 z-0"></div>
       <div className="mx-10 my-6 relative bottom-0 z-40 left-0">
         <div className="flex flex-col justify-end w-full gap-2 overflow-auto">
+          {messages.length === 0 && (
+            <div className="chat-empty-state" role="status">
+              <span>No messages yet</span>
+              <small>Send a message to start the conversation.</small>
+            </div>
+          )}
           {Array.isArray(messages) &&
             messages.map((message) => (
               <div
