@@ -999,9 +999,19 @@
   width: min(560px, 78vw);
   height: auto;
   margin: 0 0 clamp(28px, 5vh, 48px);
-  transform: translateY(-8px);
+  animation: rextails-login-logo-float 4s ease-in-out infinite;
+  will-change: transform;
   object-fit: contain;
   filter: drop-shadow(0 0 14px rgba(27, 225, 120, 0.18));
+}
+
+@keyframes rextails-login-logo-float {
+  0%, 100% { transform: translateY(-8px); }
+  50% { transform: translateY(-20px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rextails-wordmark { animation: none; }
 }
 
 .rextails-login-card {
