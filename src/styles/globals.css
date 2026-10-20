@@ -968,3 +968,102 @@
   .rextails-field input { min-height: 54px; }
   .rextails-captcha { height: 64px; }
 }
+
+/* Keep the complete sign-in flow visible on shorter laptop and mobile screens. */
+.rextails-login {
+  place-items: center;
+  overflow-y: auto;
+  padding: clamp(8px, 2vh, 20px) 16px;
+}
+
+.rextails-login-content {
+  justify-content: center;
+}
+
+.rextails-wordmark {
+  margin: 0 0 clamp(8px, 1.5vh, 15px);
+  transform: translateY(-8px);
+  font-size: clamp(38px, 8vh, 76px);
+  line-height: 1;
+}
+
+.rextails-login-card {
+  justify-content: space-between;
+  gap: clamp(6px, 1vh, 11px);
+  padding: clamp(12px, 2vh, 21px) clamp(18px, 3vw, 28px);
+  min-height: clamp(520px, 74vh, 620px);
+}
+
+.rextails-login-card h1 {
+  font-size: clamp(22px, 4vh, 29px);
+}
+
+.rextails-login-subtitle {
+  margin: -3px 0 1px;
+  font-size: clamp(13px, 2.2vh, 16px);
+}
+
+.rextails-field {
+  gap: clamp(4px, 0.7vh, 7px);
+  font-size: clamp(11px, 1.7vh, 13px);
+}
+
+.rextails-field input,
+.rextails-field .rextails-captcha-input {
+  min-height: clamp(36px, 6.5vh, 52px);
+  padding: 7px 12px;
+  font-size: clamp(13px, 2.2vh, 16px);
+}
+
+.rextails-captcha {
+  height: clamp(42px, 7.5vh, 60px);
+}
+
+.rextails-refresh {
+  width: clamp(40px, 7.5vh, 50px);
+  flex-basis: clamp(40px, 7.5vh, 50px);
+}
+
+.rextails-continue {
+  min-height: clamp(38px, 6.5vh, 50px);
+  margin-top: clamp(5px, 1vh, 12px);
+}
+
+.rextails-pin-dots {
+  gap: 12px;
+  margin: 5px 0 0;
+}
+
+.rextails-pin-dots span {
+  width: 16px;
+  height: 16px;
+}
+
+.rextails-login-card .rextails-pin-input {
+  min-height: 46px;
+  font-size: 19px;
+}
+
+.rextails-back {
+  margin-top: 7px;
+}
+
+@media (max-height: 700px) {
+  .rextails-login { place-items: safe center; padding-block: 6px; }
+  .rextails-wordmark { margin-bottom: 5px; font-size: clamp(32px, 6.5vh, 48px); }
+  .rextails-login-card { gap: 5px; padding-block: 8px; }
+  .rextails-login-card h1 { font-size: 21px; }
+  .rextails-login-subtitle { font-size: 12px; }
+  .rextails-field { gap: 3px; font-size: 10px; }
+  .rextails-field input,
+  .rextails-field .rextails-captcha-input { min-height: 32px; padding-block: 4px; font-size: 12px; }
+  .rextails-captcha { height: 38px; }
+  .rextails-refresh { width: 38px; flex-basis: 38px; }
+  .rextails-continue { min-height: 34px; margin-top: 2px; }
+}
+
+@media (max-width: 480px) {
+  .rextails-login { padding-inline: 12px; }
+  .rextails-login-card { padding-inline: 15px; }
+  .rextails-wordmark { font-size: clamp(36px, 8vh, 62px); }
+}
