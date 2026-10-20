@@ -90,7 +90,11 @@ export default function LoginScreen({ initialName, error, busy, onContinue }) {
   return (
     <main className="rextails-login">
       <section className="rextails-login-content" aria-label="Sign in to Rextails">
-        <div className="rextails-wordmark" aria-label="Rextails">Rextails</div>
+        <img
+          className="rextails-wordmark"
+          src="/Neon%20Green%20Raptor%20Rextails%20Logo.png"
+          alt="Rextails"
+        />
         <form
           className="rextails-login-card"
           onSubmit={step === "login" ? handleSubmit : handlePinSubmit}
