@@ -111,6 +111,7 @@ export default function Main() {
           email: profile.email,
           name: profile.name,
           handle: profile.handle,
+          phoneNumber: profile.phoneNumber || `8${String(profile.id).padStart(7, "0")}`,
           profileImage: profile.profilePicture,
           status: profile.about,
         },

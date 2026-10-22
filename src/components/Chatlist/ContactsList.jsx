@@ -4,8 +4,16 @@ import { GET_ALL_CONTACTS } from "@/utils/ApiRoutes";
 import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { SEARCH_USERS_ROUTE } from "@/utils/ApiRoutes";
+import { formatRextailsNumber } from "@/utils/FormatRextailsNumber";
 import { BiArrowBack, BiSearchAlt2 } from "react-icons/bi";
 import ChatLIstItem from "./ChatLIstItem";
+
+const normalizeNumberSearch = (value) => {
+  const digits = String(value || "").replace(/\D/g, "");
+  if (digits.startsWith("316") && digits.length > 10) return digits.slice(3);
+  if (digits.startsWith("31") && digits.length > 9) return digits.slice(2);
+  return digits;
+};
 
 function ContactsList() {
   const [{ userInfo }, dispatch] = useStateProvider();
@@ -13,31 +21,28 @@ function ContactsList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [copiedId, setCopiedId] = useState(false);
+  const [copiedNumber, setCopiedNumber] = useState(false);
   const [remoteResults, setRemoteResults] = useState(null);
 
-  const copyUserId = async () => {
-    if (!userInfo?.handle || !navigator.clipboard) return;
-    await navigator.clipboard.writeText(`@${userInfo.handle}`);
-    setCopiedId(true);
-    setTimeout(() => setCopiedId(false), 1500);
+  const copyPhoneNumber = async () => {
+    if (!userInfo?.phoneNumber || !navigator.clipboard) return;
+    await navigator.clipboard.writeText(formatRextailsNumber(userInfo.phoneNumber));
+    setCopiedNumber(true);
+    setTimeout(() => setCopiedNumber(false), 1500);
   };
 
   const groupedContacts = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
+    const rawQuery = searchTerm.trim().toLowerCase();
+    const query = rawQuery.replace(/^\+?31\s*6?\s*/, "").replace(/\D/g, "");
+    const numberQuery = normalizeNumberSearch(query);
     return (remoteResults || allContacts)
       .filter((contact) => Number(contact.id) !== Number(userInfo?.id))
       .filter((contact) => {
-        if (!query) return true;
-        return [contact.name, contact.handle, contact.phoneNumber]
-          .some((value) => String(value || "").toLowerCase().includes(query));
-      })
-      .reduce((groups, contact) => {
-        const initial = contact.name?.trim()?.[0]?.toUpperCase() || "#";
-        if (!groups[initial]) groups[initial] = [];
-        groups[initial].push(contact);
-        return groups;
-      }, {});
+        if (!rawQuery) return true;
+        const matchesName = String(contact.name || "").toLowerCase().includes(rawQuery);
+        const contactDigits = normalizeNumberSearch(contact.phoneNumber);
+        return matchesName || Boolean(numberQuery && contactDigits.includes(numberQuery));
+      });
   }, [allContacts, remoteResults, searchTerm, userInfo?.id]);
 
   useEffect(() => {
@@ -47,7 +52,16 @@ function ContactsList() {
           data: { users },
         } = await axios.get(GET_ALL_CONTACTS);
 
-        setAllContacts(Object.values(users || {}).flat());
+        setAllContacts(
+          Object.values(users || {})
+            .flat()
+            .map((contact) => ({
+              ...contact,
+              phoneNumber:
+                contact.phoneNumber ||
+                `8${String(contact.id).padStart(7, "0")}`,
+            }))
+        );
       } catch (err) {
         console.error("Failed to load the user directory:", err);
         setLoadError("Could not load users. Check that the local server is running.");
@@ -76,11 +90,18 @@ function ContactsList() {
           params: { q: query },
           signal: controller.signal,
         });
-        setRemoteResults(data.users || []);
+        setRemoteResults((data.users || []).map((contact) => ({
+          ...contact,
+          phoneNumber:
+            contact.phoneNumber ||
+            `8${String(contact.id).padStart(7, "0")}`,
+        })));
       } catch (error) {
         if (error.code !== "ERR_CANCELED") {
           console.error("Failed to search users:", error);
-          setRemoteResults([]);
+          // Keep searching against the already-loaded directory if the backend
+          // search endpoint is temporarily unavailable.
+          setRemoteResults(null);
         }
       }
     }, 250);
@@ -105,14 +126,14 @@ function ContactsList() {
             <span className="pl-4">New Chat</span>
           </div>
           <div className="flex items-center gap-2 pl-1 text-xs text-secondary">
-            <span>Your username: {userInfo?.handle ? `@${userInfo.handle}` : "…"}</span>
+            <span>Your number: {formatRextailsNumber(userInfo?.phoneNumber)}</span>
             <button
               className="text-teal-light hover:underline"
-              onClick={copyUserId}
+              onClick={copyPhoneNumber}
               type="button"
-              disabled={!userInfo?.handle}
+              disabled={!userInfo?.phoneNumber}
             >
-              {copiedId ? "Copied" : "Copy"}
+              {copiedNumber ? "Copied" : "Copy number"}
             </button>
           </div>
         </div>
@@ -126,7 +147,7 @@ function ContactsList() {
             <div className="">
               <input
                 type="text"
-                placeholder="Search by @username, name, or phone number"
+                placeholder="Search by name or  number"
                 className="bg-transparent text-sm focus:outline-none text-white w-full"
                 onChange={(e) => setSearchTerm(e.target.value)}
                 value={searchTerm}
@@ -136,31 +157,16 @@ function ContactsList() {
         </div>
         {loading && <p className="px-6 py-4 text-sm text-secondary">Loading people…</p>}
         {!loading && loadError && <p className="px-6 py-4 text-sm text-red-300">{loadError}</p>}
-        {!loading && !loadError && Object.keys(groupedContacts).length === 0 && (
+        {!loading && !loadError && groupedContacts.length === 0 && (
           <p className="px-6 py-4 text-sm text-secondary">
             {searchTerm ? "No users match that search." : "No other users are available yet."}
           </p>
         )}
-        {Object.entries(groupedContacts).map(([initialLetter, userList]) => {
-          return (
-            <div key={initialLetter}>
-              <div className="text-teal-light pl-14 py-5">{initialLetter}</div>
-              {userList.map((contact) => {
-                return (
-                   <div key={contact.id}>
-                  <ChatLIstItem
-                    data={contact}
-                    isContactPage={true}
-                  />
-               
-                </div>
-                );
-                  
-              })}
-                
-            </div>
-          );
-        })}
+        {groupedContacts.map((contact) => (
+          <div key={contact.id}>
+            <ChatLIstItem data={contact} isContactPage={true} />
+          </div>
+        ))}
       </div>
     </div>
   );

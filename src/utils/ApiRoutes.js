@@ -1,4 +1,4 @@
-export const HOST = "https://render-backend1-a38s.onrender.com";
+export const HOST = "http://localhost:3005";
 
 const authRoute = `${HOST}/api/auth`;
 const MESSAGES_ROUTE = `${HOST}/api/messages`;

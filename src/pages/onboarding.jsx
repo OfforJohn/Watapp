@@ -61,8 +61,11 @@ export default function OnBoarding() {
           dispatch({
             type: reducerCases.SET_USER_INFO,
             userInfo: {
+              id: data.data.id,
               name,
               email,
+              handle: data.data.handle,
+              phoneNumber: data.data.phoneNumber || `8${String(data.data.id).padStart(7, "0")}`,
               
           firebaseUid: userInfo.firebaseUid,
               profileImage: image,

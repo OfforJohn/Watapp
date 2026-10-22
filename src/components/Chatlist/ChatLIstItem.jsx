@@ -7,6 +7,7 @@ import { FaCamera, FaMicrophone } from "react-icons/fa";
 import { calculateTime } from "@/utils/CalculateTime";
 import MessageStatus from "../common/MessageStatus";
 import { FiArchive, FiStar } from "react-icons/fi";
+import { formatRextailsNumber } from "@/utils/FormatRextailsNumber";
 
 export default function ChatLIstItem({
   data,
@@ -71,7 +72,11 @@ export default function ChatLIstItem({
       <div className="min-h-full flex flex-col justify-center mt-3 pr-2 w-full">
         <div className="flex justify-between ">
           <div>
-            <span className="text-white">{data?.name}</span>
+            <span className="text-white">
+              {isContactPage
+                ? formatRextailsNumber(data?.phoneNumber)
+                : data?.name}
+            </span>
           </div>
           {!isContactPage && (
             <div>
@@ -91,13 +96,7 @@ export default function ChatLIstItem({
           <div className="flex justify-between w-full">
             <span className="text-secondary line-clamp-1 text-sm">
               {isContactPage ? (
-                <span className="flex flex-col gap-1">
-                  <span>{data?.about || "Available"}</span>
-                  <span className="text-xs text-gray-400">
-                    {data?.handle ? `@${data.handle}` : `User ${data?.id}`}
-                    {data?.phoneNumber ? ` · ${data.phoneNumber}` : ""}
-                  </span>
-                </span>
+                <span className="sr-only">Contact number</span>
               ) : (
                 <div className="flex items-center gap-1 max-w-[200px] sm:max-w-[250px] md:max-w-[300px] lg:max-w-[200px] xl:max-w-[300px]">
                   {data.senderId === userInfo.id && (
