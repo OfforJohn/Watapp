@@ -562,6 +562,30 @@
 
 .settings-theme .settings-menu-panel {
   border-right: 1px solid #222a26;
+  scrollbar-color: #3a4740 #111614;
+  scrollbar-width: thin;
+}
+
+.settings-theme .settings-menu-panel::-webkit-scrollbar,
+.settings-theme .settings-content-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-theme .settings-menu-panel::-webkit-scrollbar-track,
+.settings-theme .settings-content-panel::-webkit-scrollbar-track {
+  background: #111614;
+}
+
+.settings-theme .settings-menu-panel::-webkit-scrollbar-thumb,
+.settings-theme .settings-content-panel::-webkit-scrollbar-thumb {
+  border: 2px solid #111614;
+  border-radius: 999px;
+  background: #3a4740;
+}
+
+.settings-theme .settings-menu-panel::-webkit-scrollbar-thumb:hover,
+.settings-theme .settings-content-panel::-webkit-scrollbar-thumb:hover {
+  background: #53645a;
 }
 
 .settings-theme .settings-content-panel {

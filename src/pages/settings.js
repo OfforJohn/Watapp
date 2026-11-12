@@ -28,9 +28,9 @@ export default function SettingsPage() {
       <Sidebar navOpen={false} />
 
       {/* Settings Panels */}
-      <div className="ml-16 flex w-full">
+      <div className="ml-16 flex min-w-0 flex-1">
         {/* Left Settings Menu */}
-        <div className="settings-menu-panel w-[320px] h-full border-r border-gray-300 p-5 overflow-y-auto">
+        <div className="settings-menu-panel h-full w-[320px] shrink-0 border-r border-gray-300 p-5 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-4">Settings</h2>
 
           {/* Profile */}
@@ -98,7 +98,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Right Settings View */}
-        <div className="settings-content-panel flex-1 flex flex-col items-center justify-center text-center text-gray-600 px-8">
+        <div className="settings-content-panel flex min-w-0 flex-1 flex-col items-center justify-center px-8 text-center text-gray-600">
           <CiSettings size={50} className="text-gray-400 mb-4" />
           <h2 className="text-2xl font-medium">{activeSection}</h2>
           {activeSection !== "Settings" && (

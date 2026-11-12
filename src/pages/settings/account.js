@@ -16,9 +16,9 @@ export default function AccountSettings() {
       <Sidebar navOpen={false} />
 
       {/* Full settings layout */}
-      <div className="ml-16 flex w-full">
+      <div className="ml-16 flex min-w-0 flex-1">
         {/* Left menu */}
-        <div className="settings-menu-panel w-[320px] h-full border-r border-gray-300 p-5 overflow-y-auto">
+        <div className="settings-menu-panel h-full w-[320px] shrink-0 border-r border-gray-300 p-5 overflow-y-auto">
           <h2 className="text-xl font-semibold mb-4">Settings</h2>
 
           {/* Profile Section */}
@@ -41,7 +41,7 @@ export default function AccountSettings() {
         </div>
 
         {/* Right side content */}
-        <div className="settings-content-panel flex-1 p-8 overflow-y-auto">
+        <div className="settings-content-panel min-w-0 flex-1 overflow-y-auto p-8">
           <h1 className="text-2xl font-semibold text-gray-800 mb-6">Account Settings</h1>
 
           <div className="settings-card shadow-sm rounded-lg p-6 space-y-4">
