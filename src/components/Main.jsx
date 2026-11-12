@@ -40,6 +40,7 @@ export default function Main() {
   const [needsDisplayName, setNeedsDisplayName] = useState(false);
   const [creatingGuest, setCreatingGuest] = useState(false);
   const [loginName, setLoginName] = useState("");
+  const guestRestoreStarted = useRef(false);
 
   const startGuestSession = async (chosenName) => {
     const name = chosenName.trim();
@@ -138,6 +139,16 @@ export default function Main() {
 
     const savedName = localStorage.getItem("guestName");
     setLoginName(savedName || "");
+    if (
+      savedName &&
+      localStorage.getItem("guestEmail") &&
+      !guestRestoreStarted.current
+    ) {
+      guestRestoreStarted.current = true;
+      startGuestSession(savedName);
+      return;
+    }
+
     setNeedsDisplayName(true);
   }, []);
 
@@ -242,7 +253,9 @@ export default function Main() {
         {guestError && (
           <button
             className="rounded bg-[#00a884] px-4 py-2"
-            onClick={() => window.location.reload()}
+            onClick={() =>
+              loginName ? startGuestSession(loginName) : window.location.reload()
+            }
           >
             Try again
           </button>
