@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#__next {
+  min-height: 100%;
+  background-color: #080a09;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   height: 8px !important;
   width: 8px;
@@ -541,10 +552,63 @@
 
 .settings-icon-rail {
   background: #0e1210 !important;
+  height: 100vh;
+  height: 100dvh;
+  overscroll-behavior: contain;
+}
+
+.settings-icon-rail > div:first-child {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.settings-icon-rail > div:first-child::-webkit-scrollbar {
+  display: none;
+}
+
+.settings-icon-rail > div:last-child {
+  flex: 0 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .settings-icon-rail button {
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  appearance: none;
+  background-color: transparent;
   color: #89948e;
+  touch-action: manipulation;
+}
+
+.settings-icon-rail .chat-rail-button {
+  display: flex;
+  width: 56px;
+  min-width: 56px;
+  height: 56px;
+  min-height: 56px;
+  flex: 0 0 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px !important;
+  border-radius: 50%;
+}
+
+.settings-icon-rail .chat-rail-profile img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  object-fit: cover;
+}
+
+.settings-icon-rail .chat-rail-selected,
+.settings-icon-rail .chat-rail-selected:hover {
+  background: #202c25;
+  color: #edf3ef;
 }
 
 .settings-icon-rail button:hover {
@@ -626,10 +690,30 @@
   transition: background-color 140ms ease, color 140ms ease;
 }
 
-.settings-theme .settings-menu-panel > div:hover,
 .settings-theme .hover\:bg-gray-100:hover,
 .settings-theme .hover\:bg-emerald-600:hover {
   background-color: #1a211e !important;
+}
+
+.settings-theme .settings-nav-item {
+  display: block;
+  border-radius: 0.5rem;
+  text-align: left;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.settings-theme .settings-nav-item:hover {
+  background-color: #1a211e;
+}
+
+.settings-theme .settings-nav-item.is-active {
+  background-color: #183527;
+  color: #65d39b;
+}
+
+.settings-theme .settings-nav-item:focus-visible {
+  outline: 2px solid #43bd89;
+  outline-offset: 2px;
 }
 
 .settings-theme .bg-emerald-100 {
@@ -638,6 +722,26 @@
 
 .settings-theme .text-emerald-700 {
   color: #65d39b !important;
+}
+
+@media (max-height: 680px) {
+  .settings-icon-rail > div:first-child {
+    gap: 8px;
+  }
+
+  .settings-icon-rail .chat-rail-button {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    flex-basis: 48px;
+  }
+
+  .settings-icon-rail .chat-rail-profile img {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
 }
 
 .settings-theme .text-red-500 {

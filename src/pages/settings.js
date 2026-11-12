@@ -55,6 +55,7 @@ export default function SettingsPage() {
               label="Privacy"
               desc="Blocked contacts, disappearing messages"
               onSelect={setActiveSection}
+              active={activeSection === "Privacy"}
             />
             <SettingItem
               icon={<MdChat />}
@@ -67,18 +68,21 @@ export default function SettingsPage() {
               label="Notifications"
               desc="Message notifications"
               onSelect={setActiveSection}
+              active={activeSection === "Notifications"}
             />
             <SettingItem
               icon={<FaKeyboard />}
               label="Keyboard shortcuts"
               desc="Quick actions"
               onSelect={setActiveSection}
+              active={activeSection === "Keyboard shortcuts"}
             />
             <SettingItem
               icon={<FaQuestionCircle />}
               label="Help"
               desc="Help center, contact us, privacy policy"
               onSelect={setActiveSection}
+              active={activeSection === "Help"}
             />
             <SettingItem
               icon={<MdPersonSearch />}
@@ -113,15 +117,18 @@ export default function SettingsPage() {
 }
 
 // Helper component for left menu items
-function SettingItem({ icon, label, desc, href, onSelect }) {
+function SettingItem({ icon, label, desc, href, onSelect, active = false }) {
   const router = useRouter();
 
   return (
     <button
       type="button"
       onClick={() => (href ? router.push(href) : onSelect?.(label))}
-      className="settings-nav-item hover:bg-gray-100 rounded-lg p-3 cursor-pointer transition-all w-full text-left"
+      className={`settings-nav-item w-full cursor-pointer p-3 ${
+        active ? "is-active" : ""
+      }`}
       aria-label={`${label}: ${desc}`}
+      aria-current={active ? "page" : undefined}
     >
       <div className="flex items-center space-x-3">
         <div className="text-gray-500">{icon}</div>

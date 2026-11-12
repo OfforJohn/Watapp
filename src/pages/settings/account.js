@@ -65,13 +65,15 @@ export default function AccountSettings() {
 function SettingItem({ label, href, active = false }) {
   const router = useRouter();
   return (
-    <div
+    <button
+      type="button"
       onClick={() => router.push(href)}
-      className={`rounded-lg p-3 cursor-pointer transition-all ${
-        active ? "bg-emerald-100 text-emerald-700" : "hover:bg-gray-100"
+      className={`settings-nav-item w-full cursor-pointer p-3 ${
+        active ? "is-active" : ""
       }`}
+      aria-current={active ? "page" : undefined}
     >
       <h4 className="text-sm font-semibold">{label}</h4>
-    </div>
+    </button>
   );
 }
