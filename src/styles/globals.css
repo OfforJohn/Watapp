@@ -1095,3 +1095,84 @@
   .rextails-login-content { width: 100%; }
   .rextails-wordmark { width: min(560px, 88vw); }
 }
+
+.startup-error-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: auto;
+  padding: clamp(48px, 14vh, 124px) 24px 48px;
+  background: #1d50a1;
+  color: #e8efff;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.startup-error-content {
+  width: min(850px, 100%);
+  margin: 0 auto;
+}
+
+.startup-error-face {
+  margin-bottom: 20px;
+  font-size: 100px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.startup-error-message {
+  margin: 0 0 22px;
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.startup-error-details {
+  overflow-x: auto;
+  margin: 0 0 22px;
+  padding: 18px 19px;
+  border: 1px solid rgba(164, 196, 255, 0.2);
+  border-radius: 9px;
+  background: rgba(8, 41, 91, 0.35);
+  color: #e8efff;
+  font: 600 16px/1.7 "Cascadia Code", Consolas, monospace;
+  white-space: pre;
+}
+
+.startup-error-recovery {
+  margin: 0 0 19px;
+  font-size: 18px;
+}
+
+.startup-error-retry {
+  display: inline-flex;
+  min-width: 154px;
+  min-height: 53px;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 24px;
+  border-radius: 6px;
+  background: #e8efff;
+  color: #1d50a1;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.startup-error-retry:hover {
+  background: #fff;
+}
+
+.startup-error-retry:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .startup-error-screen { padding-inline: 20px; }
+  .startup-error-face { font-size: 82px; }
+  .startup-error-message { font-size: 20px; }
+  .startup-error-details { font-size: 13px; }
+  .startup-error-recovery { font-size: 16px; }
+}

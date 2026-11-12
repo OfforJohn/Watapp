@@ -11,6 +11,7 @@ import SearchMessages from "@/components/Chat/SearchMessages";
 import VideoCall from "@/components/Call/VideoCall";
 import VoiceCall from "@/components/Call/VoiceCall";
 import LoginScreen from "@/components/LoginScreen";
+import StartupErrorScreen from "@/components/StartupErrorScreen";
 import { useStateProvider } from "@/context/StateContext";
 import { reducerCases } from "@/context/constants";
 import {
@@ -40,6 +41,8 @@ export default function Main() {
   const [needsDisplayName, setNeedsDisplayName] = useState(false);
   const [creatingGuest, setCreatingGuest] = useState(false);
   const [loginName, setLoginName] = useState("");
+  const [showStartupError, setShowStartupError] = useState(true);
+  const startupRetryCount = useRef(0);
 
   const startGuestSession = async (chosenName) => {
     const name = chosenName.trim();
@@ -220,6 +223,17 @@ export default function Main() {
       cancelled = true;
     };
   }, [currentChatUser?.id, userInfo?.id, dispatch]);
+
+  const handleStartupRetry = () => {
+    startupRetryCount.current += 1;
+    if (startupRetryCount.current >= 3) {
+      setShowStartupError(false);
+    }
+  };
+
+  if (showStartupError) {
+    return <StartupErrorScreen onRetry={handleStartupRetry} />;
+  }
 
   if (needsDisplayName && !guestReady) {
     return (
